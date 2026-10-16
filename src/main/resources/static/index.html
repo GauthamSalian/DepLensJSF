@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepLens – Software Supply Chain Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16;
+            --surface: #0f172a;
+            --surface-border: #1e293b;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.2);
+            --danger: #f43f5e;
+            --warning: #fbbf24;
+            --success: #34d399;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(244, 63, 94, 0.06) 0%, transparent 40%);
+        }
+
+        header {
+            padding: 1.25rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--surface-border);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .logo-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .badge-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            color: var(--success);
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid rgba(52, 211, 153, 0.25);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        main {
+            flex: 1;
+            padding: 2.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero {
+            margin-bottom: 2.5rem;
+        }
+
+        .hero h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 700px;
+            line-height: 1.6;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .status-pill {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            background: #1e293b;
+            color: #cbd5e1;
+            display: inline-block;
+        }
+
+        .card pre {
+            background: #020617;
+            padding: 0.85rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: #38bdf8;
+            overflow-x: auto;
+            border: 1px solid #1e293b;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+
+        footer {
+            border-top: 1px solid var(--surface-border);
+            padding: 1.25rem 2.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-wrap">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="logo-text">
+                <h1>DepLens</h1>
+                <p>Software Supply Chain Intelligence &amp; Blast Radius Engine</p>
+            </div>
+        </div>
+        <div class="badge-live">
+            <span class="badge-dot"></span>
+            <span id="backend-status">Backend Active</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2>Welcome to DepLens Engine</h2>
+            <p>Your Spring Boot 3 &amp; MySQL environment is initialized and running. This platform provides dependency graph analysis, AST code-level exposure mapping, reverse-BFS blast radius calculations, and AI remediation guidance.</p>
+        </section>
+
+        <section class="grid">
+            <div class="card">
+                <h3>Spring Boot Backend</h3>
+                <p>Connected via Spring Web on port 8080 with Java 21 LTS runtime.</p>
+                <button class="btn" onclick="testHealth()">Test Health API</button>
+                <div style="margin-top: 1rem;">
+                    <pre id="api-output">Click button to test /api/health</pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>MySQL Database</h3>
+                <p>Connected to <code>deplens_db</code> via Spring Data JPA &amp; Hibernate with schema auto-update.</p>
+                <span class="status-pill">Database: deplens_db (Ready)</span>
+            </div>
+
+            <div class="card">
+                <h3>Graph &amp; AST Engine</h3>
+                <p>Configured with JGraphT for directed dependency graphs and JavaParser for AST source analysis.</p>
+                <span class="status-pill">JGraphT 1.5.2 &amp; JavaParser 3.26.1 loaded</span>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        DepLens &bull; Java &amp; Spring Framework Lab &bull; Team 24CSB13
+    </footer>
+
+    <script>
+        async function testHealth() {
+            const out = document.getElementById('api-output');
+            out.textContent = 'Calling /api/health...';
+            try {
+                const res = await fetch('/api/health');
+                const data = await res.json();
+                out.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                out.textContent = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
+</html>

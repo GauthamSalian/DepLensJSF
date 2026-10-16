@@ -1,0 +1,8 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.saveActions.organizeImports": true,
+  "java.jdt.ls.lombokSupport.enabled": true,
+  "files.autoSave": "afterDelay",
+  "editor.formatOnSave": true
+}
