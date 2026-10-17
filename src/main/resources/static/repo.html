@@ -92,6 +92,7 @@
             letter-spacing: -0.02em;
             background: linear-gradient(to right, #ffffff, #cbd5e1);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -415,6 +416,7 @@
             letter-spacing: -0.03em;
             background: linear-gradient(to right, #ffffff, #93c5fd);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             word-break: break-all;
         }
@@ -425,6 +427,216 @@
             line-height: 1.6;
             max-width: 800px;
             margin-bottom: 2rem;
+        }
+
+        /* Supply Chain & Commit Intelligence Cards */
+        .intelligence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .intel-card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 18px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .intel-card:hover {
+            border-color: #334155;
+            transform: translateY(-2px);
+        }
+
+        .intel-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .intel-card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .intel-card-title svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--accent);
+        }
+
+        .commit-message-box {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.55;
+            margin-bottom: 1.25rem;
+            word-break: break-word;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 1rem 1.15rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-left: 3px solid var(--accent);
+            font-family: var(--font-sans);
+        }
+
+        .commit-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            margin-top: auto;
+            padding-top: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .commit-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .commit-author strong {
+            color: var(--text-main);
+        }
+
+        .commit-sha-pill {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+
+        .commit-sha-pill:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: var(--accent);
+            color: #ffffff;
+        }
+
+        .commit-date-badge {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .commit-relative-pill {
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.25);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .manifest-chips {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .manifest-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: #0d1424;
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            transition: all 0.15s ease;
+        }
+
+        .manifest-item:hover {
+            border-color: #38bdf8;
+            background: #111a30;
+        }
+
+        .manifest-file {
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .manifest-file svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .manifest-ecosystem-tag {
+            font-size: 0.72rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        .tag-npm {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .tag-python {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .tag-maven {
+            background: rgba(192, 132, 252, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(192, 132, 252, 0.3);
+        }
+
+        .tag-generic {
+            background: rgba(148, 163, 184, 0.15);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .no-manifest-alert {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px dashed rgba(251, 191, 36, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            color: #fbbf24;
+            font-size: 0.88rem;
+            line-height: 1.5;
         }
 
         .stage-placeholder-card {
@@ -476,6 +688,7 @@
             font-family: var(--font-mono);
             margin-top: auto;
         }
+
 
         .hidden {
             display: none !important;
@@ -584,15 +797,71 @@
                 </p>
             </section>
 
+            <!-- Intelligence Cards Grid: Latest Commit & Detected Manifests -->
+            <div class="intelligence-grid">
+                <!-- 1. Latest Commit Intelligence Card -->
+                <div class="intel-card">
+                    <div class="intel-card-header">
+                        <span class="intel-card-title">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                            Latest Commit Activity
+                        </span>
+                        <a id="commit-sha-link" href="#" target="_blank" rel="noopener noreferrer" class="commit-sha-pill">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 00-3 3c0 1.3.84 2.4 2 2.82V14.18A3.001 3.001 0 009 17a3 3 0 106 0c0-1.3-.84-2.4-2-2.82V10.82c1.16-.42 2-1.52 2-2.82a3 3 0 00-3-3z"/></svg>
+                            <span id="commit-sha-text">-------</span>
+                        </a>
+                    </div>
+
+                    <div id="commit-message-display" class="commit-message-box">
+                        Loading latest commit message...
+                    </div>
+
+                    <div class="commit-meta-row">
+                        <div class="commit-author">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                            <span>Committed by <strong id="commit-author-display">author</strong></span>
+                        </div>
+                        <div class="commit-date-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                            <span id="commit-date-display">Date</span>
+                            <span id="commit-relative-display" class="commit-relative-pill">recent</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Detected Manifests & Ecosystem Intelligence Card -->
+                <div class="intel-card">
+                    <div class="intel-card-header">
+                        <span class="intel-card-title">
+                            <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                            Detected Package Manifests
+                        </span>
+                        <span id="manifest-count-badge" class="badge badge-branch">0 Manifests</span>
+                    </div>
+
+                    <div id="manifest-list-container" class="manifest-chips">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+
+                    <div id="no-manifest-box" class="no-manifest-alert hidden">
+                        No standard package manifest (such as <code>package.json</code>, <code>requirements.txt</code>, or <code>pom.xml</code>) was found in the repository root.
+                    </div>
+                </div>
+            </div>
+
             <section class="stage-placeholder-card">
                 <div class="stage-icon">
                     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
                 </div>
-                <h3>Repository Ready for Analysis</h3>
+                <h3>Repository Supply Chain Pipeline Ready</h3>
                 <p>
-                    The repository manifest scanner, JGraphT directed dependency graph constructor, and reverse-BFS blast radius engine will be mounted here next.
+                    DepLens has verified owner access, inspected the latest commit, and indexed the dependency manifests.
+                    Next phase will construct the JGraphT directed dependency graph and calculate the reverse-BFS blast radius.
                 </p>
-                <div>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn" onclick="alert('Dependency AST parsing & blast radius engine initialized for this repository.')">
+                        ⚡ Run Blast Radius Analysis
+                    </button>
                     <a href="/" class="btn btn-secondary">← Select Another Repository</a>
                 </div>
             </section>
@@ -627,6 +896,39 @@
 
         document.getElementById('breadcrumb-owner').textContent = owner || 'unknown';
         document.getElementById('breadcrumb-repo').textContent = repo || 'unknown';
+
+        function formatCommitDate(isoDateStr) {
+            if (!isoDateStr) return { formatted: 'Unknown date', relative: '' };
+            try {
+                const date = new Date(isoDateStr);
+                if (isNaN(date.getTime())) return { formatted: isoDateStr, relative: '' };
+                
+                const formatted = date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+
+                const diffMs = Date.now() - date.getTime();
+                const diffSec = Math.floor(diffMs / 1000);
+                const diffMin = Math.floor(diffSec / 60);
+                const diffHour = Math.floor(diffMin / 60);
+                const diffDay = Math.floor(diffHour / 24);
+
+                let relative = '';
+                if (diffSec < 60) relative = 'just now';
+                else if (diffMin < 60) relative = `${diffMin}m ago`;
+                else if (diffHour < 24) relative = `${diffHour}h ago`;
+                else relative = `${diffDay}d ago`;
+
+                return { formatted, relative };
+            } catch {
+                return { formatted: isoDateStr, relative: '' };
+            }
+        }
 
         async function verifyAccessAndLoad() {
             const token = localStorage.getItem('deplens_jwt');
@@ -706,6 +1008,102 @@
             } else {
                 badge.className = 'badge badge-visibility';
                 document.getElementById('repo-visibility-text').textContent = 'Public';
+            }
+
+            // 1. Latest commit info
+            if (repoData.latestCommitMessage) {
+                document.getElementById('commit-message-display').textContent = repoData.latestCommitMessage;
+            } else {
+                document.getElementById('commit-message-display').textContent = 'No recent commit message found';
+            }
+
+            if (repoData.latestCommitAuthor) {
+                document.getElementById('commit-author-display').textContent = repoData.latestCommitAuthor;
+            } else {
+                document.getElementById('commit-author-display').textContent = repoData.owner || 'Unknown';
+            }
+
+            const { formatted, relative } = formatCommitDate(repoData.latestCommitDate);
+            document.getElementById('commit-date-display').textContent = formatted;
+            if (relative) {
+                document.getElementById('commit-relative-display').textContent = relative;
+                document.getElementById('commit-relative-display').classList.remove('hidden');
+            } else {
+                document.getElementById('commit-relative-display').classList.add('hidden');
+            }
+
+            const shaLink = document.getElementById('commit-sha-link');
+            const shaText = document.getElementById('commit-sha-text');
+            if (repoData.latestCommitSha) {
+                shaText.textContent = repoData.latestCommitSha;
+                shaLink.href = repoData.latestCommitUrl || `https://github.com/${encodeURIComponent(repoData.owner || owner)}/${encodeURIComponent(repoData.name || repo)}/commit/${encodeURIComponent(repoData.latestCommitSha)}`;
+                shaLink.classList.remove('hidden');
+            } else {
+                shaLink.classList.add('hidden');
+            }
+
+            // 2. Detected manifests & ecosystems
+            const manifestContainer = document.getElementById('manifest-list-container');
+            const noManifestBox = document.getElementById('no-manifest-box');
+            const manifestCountBadge = document.getElementById('manifest-count-badge');
+            manifestContainer.innerHTML = '';
+
+            const manifests = repoData.detectedManifests || [];
+            if (manifests.length > 0) {
+                manifestCountBadge.textContent = `${manifests.length} ${manifests.length === 1 ? 'Manifest' : 'Manifests'} Detected`;
+                noManifestBox.classList.add('hidden');
+
+                manifests.forEach((m) => {
+                    const item = document.createElement('div');
+                    item.className = 'manifest-item';
+
+                    let tagClass = 'tag-generic';
+                    let ecosystemLabel = 'Manifest';
+
+                    if (m === 'package.json') {
+                        tagClass = 'tag-npm';
+                        ecosystemLabel = 'npm (Node.js)';
+                    } else if (m === 'package-lock.json') {
+                        tagClass = 'tag-npm';
+                        ecosystemLabel = 'npm (Resolved Lockfile)';
+                    } else if (m === 'yarn.lock') {
+                        tagClass = 'tag-npm';
+                        ecosystemLabel = 'Yarn (Lockfile)';
+                    } else if (m === 'pnpm-lock.yaml') {
+                        tagClass = 'tag-npm';
+                        ecosystemLabel = 'pnpm (Lockfile)';
+                    } else if (m.startsWith('requirements')) {
+                        tagClass = 'tag-python';
+                        ecosystemLabel = 'pip (Python)';
+                    } else if (m === 'pyproject.toml') {
+                        tagClass = 'tag-python';
+                        ecosystemLabel = 'Poetry / Flit (Python)';
+                    } else if (m === 'Pipfile' || m === 'Pipfile.lock') {
+                        tagClass = 'tag-python';
+                        ecosystemLabel = 'Pipenv (Python)';
+                    } else if (m === 'pom.xml') {
+                        tagClass = 'tag-maven';
+                        ecosystemLabel = 'Maven (Java)';
+                    } else if (m === 'build.gradle') {
+                        tagClass = 'tag-maven';
+                        ecosystemLabel = 'Gradle (Java)';
+                    } else if (m === 'go.mod') {
+                        tagClass = 'tag-generic';
+                        ecosystemLabel = 'Go Modules';
+                    }
+
+                    item.innerHTML = `
+                        <div class="manifest-file">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                            <span>${m}</span>
+                        </div>
+                        <span class="manifest-ecosystem-tag ${tagClass}">${ecosystemLabel}</span>
+                    `;
+                    manifestContainer.appendChild(item);
+                });
+            } else {
+                manifestCountBadge.textContent = '0 Manifests';
+                noManifestBox.classList.remove('hidden');
             }
         }
 

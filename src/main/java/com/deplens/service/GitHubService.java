@@ -30,15 +30,9 @@ public class GitHubService {
         // If the user authenticated via real GitHub OAuth and has an access token
         if (token != null && !token.isBlank()) {
             try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setBearerAuth(token);
-                headers.set("Accept", "application/vnd.github+json");
-                headers.set("X-GitHub-Api-Version", "2022-11-28");
-                headers.set("User-Agent", "DepLens-Engine");
-
+                HttpHeaders headers = createAuthHeaders(token);
                 HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-                // Fetch up to 100 repositories, sorted by last updated
                 String url = "https://api.github.com/user/repos?per_page=100&sort=updated&affiliation=owner,collaborator,organization_member";
 
                 ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
@@ -66,26 +60,23 @@ public class GitHubService {
     }
 
     /**
-     * Verifies that the authenticated user actually owns or has authorized push/admin access to the repository.
-     * Returns the RepositoryDto if authorized, or Optional.empty() if access is denied.
+     * Verifies repository ownership/permission and enriches the repository with:
+     * - Latest commit message, author, date, and SHA
+     * - Detected manifest files (package.json, package-lock.json, requirements.txt, pom.xml, etc.)
      */
     public Optional<RepositoryDto> getRepositoryDetails(User user, String owner, String repoName) {
         String token = user.getGithubAccessToken();
 
-        // 1. If real GitHub OAuth token is present, query GitHub API to verify ownership / collaborator permissions
+        // 1. If real GitHub OAuth token is present, query GitHub API
         if (token != null && !token.isBlank()) {
             try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.setBearerAuth(token);
-                headers.set("Accept", "application/vnd.github+json");
-                headers.set("X-GitHub-Api-Version", "2022-11-28");
-                headers.set("User-Agent", "DepLens-Engine");
-
+                HttpHeaders headers = createAuthHeaders(token);
                 HttpEntity<Void> entity = new HttpEntity<>(headers);
-                String url = "https://api.github.com/repos/" + owner + "/" + repoName;
 
+                // Fetch basic repository info
+                String repoUrl = "https://api.github.com/repos/" + owner + "/" + repoName;
                 ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                        url,
+                        repoUrl,
                         HttpMethod.valueOf("GET"),
                         entity,
                         new ParameterizedTypeReference<Map<String, Object>>() {}
@@ -95,9 +86,8 @@ public class GitHubService {
                 if (body != null) {
                     RepositoryDto dto = mapToDto(body);
 
-                    // Check permissions: user must be the repository owner or have collaborator write/admin access
+                    // Check ownership or collaborator push/admin access
                     boolean isOwner = owner.equalsIgnoreCase(user.getUsername());
-
                     Object permissionsObj = body.get("permissions");
                     boolean hasPushOrAdmin = false;
                     if (permissionsObj instanceof Map<?, ?> permissions) {
@@ -105,13 +95,19 @@ public class GitHubService {
                                 || Boolean.TRUE.equals(permissions.get("admin"));
                     }
 
-                    if (isOwner || hasPushOrAdmin) {
-                        return Optional.of(dto);
-                    } else {
+                    if (!isOwner && !hasPushOrAdmin) {
                         log.warn("User {} denied access to repo {}/{}: not owner and lacks push/admin permissions",
                                 user.getUsername(), owner, repoName);
                         return Optional.empty();
                     }
+
+                    // Enrich with latest commit metadata
+                    enrichWithLatestCommit(dto, owner, repoName, entity);
+
+                    // Enrich with detected dependency manifests (package.json, requirements.txt, pom.xml, etc.)
+                    enrichWithManifests(dto, owner, repoName, entity);
+
+                    return Optional.of(dto);
                 }
             } catch (Exception ex) {
                 log.warn("Access check failed for user {} on repo {}/{}: {}",
@@ -122,14 +118,172 @@ public class GitHubService {
 
         // 2. Fallback for mock/dev session: strictly verify username matches repository owner
         if (user.getUsername() != null && user.getUsername().equalsIgnoreCase(owner)) {
-            return Optional.of(new RepositoryDto(
+            RepositoryDto mock = new RepositoryDto(
                     101L, repoName, owner + "/" + repoName, owner, false,
                     "Repository managed by @" + owner, "main", "Java", "2026-10-17T20:00:00Z",
                     "https://github.com/" + owner + "/" + repoName
-            ));
+            );
+            mock.setLatestCommitMessage("feat: implement supply chain intelligence scanner");
+            mock.setLatestCommitSha("e7f2b1a");
+            mock.setLatestCommitAuthor(owner);
+            mock.setLatestCommitDate("2026-10-17T19:30:00Z");
+            mock.setLatestCommitUrl("https://github.com/" + owner + "/" + repoName + "/commit/e7f2b1a");
+            mock.setDetectedManifests(List.of("package.json", "package-lock.json", "pom.xml"));
+            mock.setEcosystems(List.of("npm (Node.js)", "Maven (Java)"));
+            return Optional.of(mock);
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Fetches the latest commit message, author, date, and SHA from GitHub
+     */
+    private void enrichWithLatestCommit(RepositoryDto dto, String owner, String repoName, HttpEntity<Void> entity) {
+        try {
+            String commitsUrl = "https://api.github.com/repos/" + owner + "/" + repoName + "/commits?per_page=1";
+            ResponseEntity<List<Map<String, Object>>> commitsRes = restTemplate.exchange(
+                    commitsUrl,
+                    HttpMethod.valueOf("GET"),
+                    entity,
+                    new ParameterizedTypeReference<List<Map<String, Object>>>() {}
+            );
+
+            List<Map<String, Object>> commits = commitsRes.getBody();
+            if (commits != null && !commits.isEmpty()) {
+                Map<String, Object> latestCommitObj = commits.get(0);
+                String sha = (String) latestCommitObj.get("sha");
+                if (sha != null && sha.length() >= 7) {
+                    dto.setLatestCommitSha(sha.substring(0, 7));
+                }
+                dto.setLatestCommitUrl((String) latestCommitObj.get("html_url"));
+
+                Object commitDetails = latestCommitObj.get("commit");
+                if (commitDetails instanceof Map<?, ?> commitMap) {
+                    dto.setLatestCommitMessage((String) commitMap.get("message"));
+
+                    Object authorObj = commitMap.get("author");
+                    if (authorObj instanceof Map<?, ?> authorMap) {
+                        dto.setLatestCommitAuthor((String) authorMap.get("name"));
+                        dto.setLatestCommitDate((String) authorMap.get("date"));
+                    }
+
+                    // Fallback to committer if author date or name is null
+                    if (dto.getLatestCommitDate() == null || dto.getLatestCommitDate().isBlank()) {
+                        Object committerObj = commitMap.get("committer");
+                        if (committerObj instanceof Map<?, ?> committerMap) {
+                            if (dto.getLatestCommitAuthor() == null) {
+                                dto.setLatestCommitAuthor((String) committerMap.get("name"));
+                            }
+                            dto.setLatestCommitDate((String) committerMap.get("date"));
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            log.warn("Could not fetch latest commit for {}/{}: {}", owner, repoName, ex.getMessage());
+        }
+    }
+
+    /**
+     * Inspects repository root files to detect package.json, package-lock.json, requirements.txt, pom.xml, etc.
+     */
+    private void enrichWithManifests(RepositoryDto dto, String owner, String repoName, HttpEntity<Void> entity) {
+        try {
+            String contentsUrl = "https://api.github.com/repos/" + owner + "/" + repoName + "/contents";
+            ResponseEntity<List<Map<String, Object>>> contentsRes = restTemplate.exchange(
+                    contentsUrl,
+                    HttpMethod.valueOf("GET"),
+                    entity,
+                    new ParameterizedTypeReference<List<Map<String, Object>>>() {}
+            );
+
+            List<Map<String, Object>> files = contentsRes.getBody();
+            if (files != null) {
+                Set<String> fileNames = new HashSet<>();
+                for (Map<String, Object> file : files) {
+                    Object name = file.get("name");
+                    if (name instanceof String str) {
+                        fileNames.add(str.toLowerCase());
+                    }
+                }
+
+                List<String> manifests = new ArrayList<>();
+                Set<String> ecosystems = new LinkedHashSet<>();
+
+                // npm / Node.js
+                if (fileNames.contains("package.json")) {
+                    manifests.add("package.json");
+                    ecosystems.add("npm (Node.js)");
+                }
+                if (fileNames.contains("package-lock.json")) {
+                    manifests.add("package-lock.json");
+                    ecosystems.add("npm (Resolved Lockfile)");
+                }
+                if (fileNames.contains("yarn.lock")) {
+                    manifests.add("yarn.lock");
+                    ecosystems.add("Yarn (Lockfile)");
+                }
+                if (fileNames.contains("pnpm-lock.yaml")) {
+                    manifests.add("pnpm-lock.yaml");
+                    ecosystems.add("pnpm (Lockfile)");
+                }
+
+                // Python
+                for (String fn : fileNames) {
+                    if (fn.startsWith("requirements") && fn.endsWith(".txt")) {
+                        manifests.add(fn);
+                        ecosystems.add("pip (Python)");
+                    }
+                }
+                if (fileNames.contains("pyproject.toml")) {
+                    manifests.add("pyproject.toml");
+                    ecosystems.add("Poetry / Flit (Python)");
+                }
+                if (fileNames.contains("pipfile")) {
+                    manifests.add("Pipfile");
+                    ecosystems.add("Pipenv (Python)");
+                }
+                if (fileNames.contains("pipfile.lock")) {
+                    manifests.add("Pipfile.lock");
+                    ecosystems.add("Pipenv (Lockfile)");
+                }
+                if (fileNames.contains("setup.py")) {
+                    manifests.add("setup.py");
+                    ecosystems.add("Python (setuptools)");
+                }
+
+                // Java
+                if (fileNames.contains("pom.xml")) {
+                    manifests.add("pom.xml");
+                    ecosystems.add("Maven (Java)");
+                }
+                if (fileNames.contains("build.gradle") || fileNames.contains("build.gradle.kts")) {
+                    manifests.add("build.gradle");
+                    ecosystems.add("Gradle (Java / Kotlin)");
+                }
+
+                // Go
+                if (fileNames.contains("go.mod")) {
+                    manifests.add("go.mod");
+                    ecosystems.add("Go Modules");
+                }
+
+                dto.setDetectedManifests(manifests);
+                dto.setEcosystems(new ArrayList<>(ecosystems));
+            }
+        } catch (Exception ex) {
+            log.warn("Could not inspect manifests for {}/{}: {}", owner, repoName, ex.getMessage());
+        }
+    }
+
+    private HttpHeaders createAuthHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.set("Accept", "application/vnd.github+json");
+        headers.set("X-GitHub-Api-Version", "2022-11-28");
+        headers.set("User-Agent", "DepLens-Engine");
+        return headers;
     }
 
     /**

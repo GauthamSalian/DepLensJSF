@@ -1,5 +1,8 @@
 package com.deplens.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RepositoryDto {
 
     private Long id;
@@ -12,6 +15,17 @@ public class RepositoryDto {
     private String language;
     private String updatedAt;
     private String htmlUrl;
+
+    // Latest commit information
+    private String latestCommitMessage;
+    private String latestCommitSha;
+    private String latestCommitAuthor;
+    private String latestCommitDate;
+    private String latestCommitUrl;
+
+    // Detected manifest files and ecosystems
+    private List<String> detectedManifests = new ArrayList<>();
+    private List<String> ecosystems = new ArrayList<>();
 
     public RepositoryDto() {
     }
@@ -59,4 +73,25 @@ public class RepositoryDto {
 
     public String getHtmlUrl() { return htmlUrl; }
     public void setHtmlUrl(String htmlUrl) { this.htmlUrl = htmlUrl; }
+
+    public String getLatestCommitMessage() { return latestCommitMessage; }
+    public void setLatestCommitMessage(String latestCommitMessage) { this.latestCommitMessage = latestCommitMessage; }
+
+    public String getLatestCommitSha() { return latestCommitSha; }
+    public void setLatestCommitSha(String latestCommitSha) { this.latestCommitSha = latestCommitSha; }
+
+    public String getLatestCommitAuthor() { return latestCommitAuthor; }
+    public void setLatestCommitAuthor(String latestCommitAuthor) { this.latestCommitAuthor = latestCommitAuthor; }
+
+    public String getLatestCommitDate() { return latestCommitDate; }
+    public void setLatestCommitDate(String latestCommitDate) { this.latestCommitDate = latestCommitDate; }
+
+    public String getLatestCommitUrl() { return latestCommitUrl; }
+    public void setLatestCommitUrl(String latestCommitUrl) { this.latestCommitUrl = latestCommitUrl; }
+
+    public List<String> getDetectedManifests() { return detectedManifests; }
+    public void setDetectedManifests(List<String> detectedManifests) { this.detectedManifests = detectedManifests; }
+
+    public List<String> getEcosystems() { return ecosystems; }
+    public void setEcosystems(List<String> ecosystems) { this.ecosystems = ecosystems; }
 }
