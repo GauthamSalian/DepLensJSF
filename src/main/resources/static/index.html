@@ -11,6 +11,7 @@
         :root {
             --bg: #090d16;
             --surface: #0f172a;
+            --surface-hover: #131d35;
             --surface-border: #1e293b;
             --accent: #38bdf8;
             --accent-glow: rgba(56, 189, 248, 0.2);
@@ -42,13 +43,16 @@
         }
 
         header {
-            padding: 1.25rem 2.5rem;
+            padding: 1rem 2.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid var(--surface-border);
             background: rgba(15, 23, 42, 0.7);
             backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
         }
 
         .logo-wrap {
@@ -58,8 +62,8 @@
         }
 
         .logo-icon {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             background: linear-gradient(135deg, #0284c7, #38bdf8);
             border-radius: 10px;
             display: flex;
@@ -91,31 +95,118 @@
             text-transform: uppercase;
         }
 
-        .badge-live {
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.8rem;
-            font-family: var(--font-mono);
-            color: var(--success);
-            background: rgba(52, 211, 153, 0.1);
-            border: 1px solid rgba(52, 211, 153, 0.25);
-            padding: 0.35rem 0.85rem;
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            padding: 0.6rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .btn-github {
+            background: #24292f;
+            border: 1px solid #30363d;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-github:hover {
+            background: #2f363d;
+            border-color: #8b949e;
+        }
+
+        .btn-github svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .btn-secondary {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid var(--surface-border);
+        }
+
+        .btn-secondary:hover {
+            background: #334155;
+            color: #f8fafc;
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: rgba(244, 63, 94, 0.25);
+        }
+
+        /* User profile in header */
+        .user-profile-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--surface-border);
+            padding: 0.4rem 0.85rem;
             border-radius: 9999px;
         }
 
-        .badge-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--success);
+        .user-avatar {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            box-shadow: 0 0 8px var(--success);
-            animation: pulse 2s infinite;
+            border: 2px solid var(--accent);
+            object-fit: cover;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .user-session {
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .session-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
         }
 
         main {
@@ -131,7 +222,7 @@
         }
 
         .hero h2 {
-            font-size: 2rem;
+            font-size: 2.25rem;
             font-weight: 800;
             letter-spacing: -0.03em;
             margin-bottom: 0.5rem;
@@ -139,9 +230,56 @@
 
         .hero p {
             color: var(--text-muted);
-            font-size: 1rem;
-            max-width: 700px;
+            font-size: 1.05rem;
+            max-width: 760px;
             line-height: 1.6;
+        }
+
+        .auth-banner {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .auth-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .auth-icon-wrap {
+            width: 52px;
+            height: 52px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-icon-wrap svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--accent);
+        }
+
+        .auth-banner-text h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .auth-banner-text p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
         }
 
         .grid {
@@ -201,23 +339,29 @@
             color: #38bdf8;
             overflow-x: auto;
             border: 1px solid #1e293b;
+            max-height: 200px;
         }
 
-        .btn {
-            background: linear-gradient(135deg, #0284c7, #0ea5e9);
-            color: white;
+        .user-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.45rem 0;
+            border-bottom: 1px solid #1e293b;
+            font-size: 0.82rem;
+        }
+
+        .user-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .user-detail-label {
+            color: var(--text-muted);
+        }
+
+        .user-detail-val {
+            font-family: var(--font-mono);
+            color: var(--accent);
             font-weight: 600;
-            font-size: 0.85rem;
-            border: none;
-            padding: 0.6rem 1.25rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-            transform: scale(0.98);
         }
 
         footer {
@@ -227,6 +371,10 @@
             color: var(--text-muted);
             font-size: 0.8rem;
             font-family: var(--font-mono);
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -241,38 +389,93 @@
                 <p>Software Supply Chain Intelligence &amp; Blast Radius Engine</p>
             </div>
         </div>
-        <div class="badge-live">
-            <span class="badge-dot"></span>
-            <span id="backend-status">Backend Active</span>
+
+        <div class="header-actions">
+            <!-- Logged Out View -->
+            <div id="auth-logged-out" class="header-actions">
+                <a href="/oauth2/authorization/github" class="btn btn-github">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    Sign in with GitHub
+                </a>
+                <button class="btn btn-secondary" onclick="quickDevLogin()" title="Instant 30-day session without GitHub credentials">
+                    Dev Quick-Login
+                </button>
+            </div>
+
+            <!-- Logged In View -->
+            <div id="auth-logged-in" class="header-actions hidden">
+                <div class="user-profile-badge">
+                    <img id="nav-avatar" class="user-avatar" src="" alt="Avatar">
+                    <div class="user-info">
+                        <span id="nav-name" class="user-name">User</span>
+                        <span class="user-session">
+                            <span class="session-dot"></span> 30-Day Session Active
+                        </span>
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
         </div>
     </header>
 
     <main>
         <section class="hero">
-            <h2>Welcome to DepLens Engine</h2>
-            <p>Your Spring Boot 3 &amp; MySQL environment is initialized and running. This platform provides dependency graph analysis, AST code-level exposure mapping, reverse-BFS blast radius calculations, and AI remediation guidance.</p>
+            <h2>Supply Chain Intelligence &amp; Blast Radius Engine</h2>
+            <p>DepLens combines directed dependency graph analysis, AST source code exposure checks, reverse-BFS blast radius computations, and AI-driven remediation guidance.</p>
         </section>
 
+        <!-- Dynamic Auth Banner -->
+        <div class="auth-banner">
+            <div class="auth-banner-left">
+                <div class="auth-icon-wrap">
+                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                </div>
+                <div class="auth-banner-text">
+                    <h3 id="banner-title">Authentication &amp; Session Status</h3>
+                    <p id="banner-subtitle">Checking JWT session...</p>
+                </div>
+            </div>
+            <div id="banner-action">
+                <!-- Action populated via JS -->
+            </div>
+        </div>
+
         <section class="grid">
+            <!-- User Session Card -->
             <div class="card">
-                <h3>Spring Boot Backend</h3>
-                <p>Connected via Spring Web on port 8080 with Java 21 LTS runtime.</p>
-                <button class="btn" onclick="testHealth()">Test Health API</button>
+                <h3>Session Details (30-Day JWT)</h3>
+                <p>JWT tokens persist in localStorage and secure cookies with a 30-day expiration window.</p>
+                <div id="user-details-list">
+                    <pre id="token-status">No active session found</pre>
+                </div>
+            </div>
+
+            <!-- Backend Status Card -->
+            <div class="card">
+                <h3>Spring Boot &amp; Security</h3>
+                <p>Spring Security 6 with OAuth2 Client and stateless JJWT authentication filter.</p>
+                <button class="btn btn-secondary" onclick="testHealth()">Test /api/health</button>
                 <div style="margin-top: 1rem;">
                     <pre id="api-output">Click button to test /api/health</pre>
                 </div>
             </div>
 
+            <!-- Database & Engine Card -->
             <div class="card">
-                <h3>MySQL Database</h3>
-                <p>Connected to <code>deplens_db</code> via Spring Data JPA &amp; Hibernate with schema auto-update.</p>
-                <span class="status-pill">Database: deplens_db (Ready)</span>
-            </div>
-
-            <div class="card">
-                <h3>Graph &amp; AST Engine</h3>
-                <p>Configured with JGraphT for directed dependency graphs and JavaParser for AST source analysis.</p>
-                <span class="status-pill">JGraphT 1.5.2 &amp; JavaParser 3.26.1 loaded</span>
+                <h3>MySQL Persistence</h3>
+                <p>User identities, scan histories, and dependency graphs stored in MySQL <code>deplens_db</code>.</p>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Database</span>
+                    <span class="user-detail-val">deplens_db (Local)</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">JPA Auto-DDL</span>
+                    <span class="user-detail-val">update</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Graph Engine</span>
+                    <span class="user-detail-val">JGraphT 1.5.2</span>
+                </div>
             </div>
         </section>
     </main>
@@ -282,6 +485,127 @@
     </footer>
 
     <script>
+        // Check for token in URL query parameter (redirected from OAuth2 callback)
+        (function handleOAuthRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            if (token) {
+                localStorage.setItem('deplens_jwt', token);
+                // Clean the URL without reloading
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        })();
+
+        // Retrieve current active token
+        function getToken() {
+            return localStorage.getItem('deplens_jwt');
+        }
+
+        // Check authentication state on page load
+        async function checkAuthState() {
+            const token = getToken();
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+            }
+
+            try {
+                const res = await fetch('/api/auth/me', { headers });
+                const data = await res.json();
+
+                if (data.authenticated) {
+                    renderLoggedIn(data);
+                } else {
+                    renderLoggedOut();
+                }
+            } catch (err) {
+                console.error('Auth check error:', err);
+                renderLoggedOut();
+            }
+        }
+
+        function renderLoggedIn(user) {
+            document.getElementById('auth-logged-out').classList.add('hidden');
+            document.getElementById('auth-logged-in').classList.remove('hidden');
+
+            document.getElementById('nav-name').textContent = user.name || user.username;
+            document.getElementById('nav-avatar').src = user.avatarUrl || 'https://github.com/identicons/' + user.username + '.png';
+
+            document.getElementById('banner-title').textContent = 'Logged In as @' + user.username;
+            document.getElementById('banner-subtitle').textContent = 'Session valid for 30 days. Ready for repository scans and blast-radius analysis.';
+            document.getElementById('banner-action').innerHTML = `
+                <button class="btn btn-danger" onclick="logout()">Sign Out</button>
+            `;
+
+            const detailsHtml = `
+                <div class="user-detail-row">
+                    <span class="user-detail-label">GitHub Username</span>
+                    <span class="user-detail-val">@${user.username}</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Full Name</span>
+                    <span class="user-detail-val">${user.name || 'N/A'}</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Email</span>
+                    <span class="user-detail-val">${user.email || 'N/A'}</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Role</span>
+                    <span class="user-detail-val">${user.role}</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Session Duration</span>
+                    <span class="user-detail-val" style="color: var(--success);">${user.sessionDays} Days</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">GitHub Token Attached</span>
+                    <span class="user-detail-val" style="color: ${user.hasGithubToken ? 'var(--success)' : 'var(--warning)'};">
+                        ${user.hasGithubToken ? 'Yes (API Scans Ready)' : 'No (Dev Session)'}
+                    </span>
+                </div>
+            `;
+            document.getElementById('user-details-list').innerHTML = detailsHtml;
+        }
+
+        function renderLoggedOut() {
+            document.getElementById('auth-logged-in').classList.add('hidden');
+            document.getElementById('auth-logged-out').classList.remove('hidden');
+
+            document.getElementById('banner-title').textContent = 'Authentication Required';
+            document.getElementById('banner-subtitle').textContent = 'Sign in with GitHub to link repositories and inspect software supply chain dependencies.';
+            document.getElementById('banner-action').innerHTML = `
+                <a href="/oauth2/authorization/github" class="btn btn-github">
+                    Sign in with GitHub
+                </a>
+            `;
+
+            document.getElementById('user-details-list').innerHTML = `
+                <pre id="token-status">No active 30-day session.\nClick 'Sign in with GitHub' or 'Dev Quick-Login' above.</pre>
+            `;
+        }
+
+        async function quickDevLogin() {
+            try {
+                const res = await fetch('/api/auth/dev-login?username=deplens-tester', { method: 'POST' });
+                const data = await res.json();
+                if (data.token) {
+                    localStorage.setItem('deplens_jwt', data.token);
+                    checkAuthState();
+                }
+            } catch (err) {
+                alert('Dev login failed: ' + err.message);
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+            } catch (e) {}
+            localStorage.removeItem('deplens_jwt');
+            renderLoggedOut();
+        }
+
         async function testHealth() {
             const out = document.getElementById('api-output');
             out.textContent = 'Calling /api/health...';
@@ -293,6 +617,9 @@
                 out.textContent = 'Error: ' + err.message;
             }
         }
+
+        // Run on load
+        checkAuthState();
     </script>
 </body>
 </html>
