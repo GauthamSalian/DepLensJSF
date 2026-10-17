@@ -86,7 +86,7 @@ public class AuthController {
             @RequestParam(defaultValue = "octocat") String username,
             HttpServletResponse response
     ) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findFirstByUsernameIgnoreCase(username)
                 .orElseGet(() -> {
                     User newUser = User.builder()
                             .githubId("dev_" + username.hashCode())

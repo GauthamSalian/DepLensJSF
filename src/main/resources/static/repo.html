@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repository Security – DepLens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090d16;
+            --surface: #0f172a;
+            --surface-hover: #131d35;
+            --surface-border: #1e293b;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.2);
+            --danger: #f43f5e;
+            --danger-glow: rgba(244, 63, 94, 0.15);
+            --warning: #fbbf24;
+            --success: #34d399;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(244, 63, 94, 0.06) 0%, transparent 40%);
+        }
+
+        header {
+            padding: 1rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--surface-border);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .logo-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .logo-text h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .breadcrumb-divider {
+            color: #334155;
+            font-size: 1.2rem;
+        }
+
+        .breadcrumb-path {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .breadcrumb-path a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .breadcrumb-path a:hover {
+            color: var(--accent);
+        }
+
+        .breadcrumb-current {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border: none;
+            padding: 0.55rem 1.15rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #1e293b;
+            color: #cbd5e1;
+            border: 1px solid var(--surface-border);
+        }
+
+        .btn-secondary:hover {
+            background: #334155;
+            color: #ffffff;
+        }
+
+        .btn-github {
+            background: #24292f;
+            border: 1px solid #30363d;
+            color: #ffffff;
+        }
+
+        .btn-github:hover {
+            background: #2f363d;
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: rgba(244, 63, 94, 0.25);
+        }
+
+        main {
+            flex: 1;
+            padding: 3rem 2.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Verification Loading Spinner */
+        .verification-card {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 20px;
+            padding: 4rem 2rem;
+            text-align: center;
+            backdrop-filter: blur(16px);
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(56, 189, 248, 0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .verification-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .verification-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Access Denied Barrier Card */
+        .access-denied-hero {
+            background: linear-gradient(135deg, rgba(30, 20, 30, 0.8), rgba(15, 23, 42, 0.95));
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 20px;
+            padding: 3.5rem 2.5rem;
+            text-align: center;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5), 0 0 40px var(--danger-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lock-icon-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 0 30px rgba(244, 63, 94, 0.2);
+        }
+
+        .lock-icon-wrap svg {
+            width: 36px;
+            height: 36px;
+            fill: var(--danger);
+        }
+
+        .access-denied-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--danger);
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .access-denied-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.75rem;
+            color: #ffffff;
+        }
+
+        .access-denied-text {
+            color: #cbd5e1;
+            font-size: 1.05rem;
+            max-width: 640px;
+            margin: 0 auto 1.75rem;
+            line-height: 1.6;
+        }
+
+        .access-denied-meta-box {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 1.25rem;
+            max-width: 520px;
+            margin: 0 auto 2rem;
+            text-align: left;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.35rem 0;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .meta-row:last-child {
+            border-bottom: none;
+        }
+
+        .meta-label {
+            color: var(--text-muted);
+        }
+
+        .meta-val {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* Authorized Repository Slug Content */
+        .repo-slug-hero {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.85));
+            border: 1px solid var(--surface-border);
+            border-radius: 20px;
+            padding: 2.75rem 2.5rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .repo-slug-hero::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .repo-badge-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .badge-visibility {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .badge-private {
+            background: rgba(251, 191, 36, 0.12);
+            color: var(--warning);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .badge-branch {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 1px solid var(--surface-border);
+        }
+
+        .badge-owner-verified {
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            border-radius: 50%;
+        }
+
+        .repo-title-wrap {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.85rem;
+        }
+
+        .repo-owner-prefix {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .repo-name-heading {
+            font-size: 2.6rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(to right, #ffffff, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            word-break: break-all;
+        }
+
+        .repo-description {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin-bottom: 2rem;
+        }
+
+        .stage-placeholder-card {
+            background: var(--surface);
+            border: 1px dashed #334155;
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .stage-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1.25rem;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stage-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: var(--accent);
+        }
+
+        .stage-placeholder-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stage-placeholder-card p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            max-width: 600px;
+            margin: 0 auto 1.75rem;
+            line-height: 1.6;
+        }
+
+        footer {
+            border-top: 1px solid var(--surface-border);
+            padding: 1.25rem 2.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+            margin-top: auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <a href="/" class="logo-wrap">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="logo-text">
+                    <h1>DepLens</h1>
+                </div>
+            </a>
+            <span class="breadcrumb-divider">/</span>
+            <div class="breadcrumb-path">
+                <a href="/">Dashboard</a>
+                <span>/</span>
+                <span id="breadcrumb-owner">owner</span>
+                <span>/</span>
+                <span id="breadcrumb-repo" class="breadcrumb-current">repository</span>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <a href="/" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- 1. Verification In-Progress State -->
+        <section id="verification-loading" class="verification-card">
+            <div class="spinner"></div>
+            <h3>Verifying Repository Ownership</h3>
+            <p>Checking GitHub account permissions and access rights for this repository...</p>
+        </section>
+
+        <!-- 2. Access Denied State (403 Forbidden - Not Owner / No Access) -->
+        <section id="access-denied-view" class="access-denied-hero hidden">
+            <div class="lock-icon-wrap">
+                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
+            <div class="access-denied-badge">
+                <span>Access Denied &bull; 403 Forbidden</span>
+            </div>
+            <h2 class="access-denied-title">Repository Owner Permission Required</h2>
+            <p class="access-denied-text">
+                Only the authenticated owner (<strong id="denied-owner-label" style="color: var(--accent);">@owner</strong>) or authorized collaborators have permission to open this link and inspect supply chain risk intelligence.
+            </p>
+
+            <div class="access-denied-meta-box">
+                <div class="meta-row">
+                    <span class="meta-label">Target Repository:</span>
+                    <span id="denied-target-repo" class="meta-val">owner / repo</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Currently Signed In As:</span>
+                    <span id="denied-current-user" class="meta-val">@anonymous</span>
+                </div>
+                <div class="meta-row">
+                    <span class="meta-label">Access Policy:</span>
+                    <span class="meta-val" style="color: var(--danger);">Owner / Collaborator Only</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/" class="btn btn-secondary">← Back to Dashboard</a>
+                <a id="switch-account-btn" href="/oauth2/authorization/github" class="btn btn-github">Switch GitHub Account</a>
+            </div>
+        </section>
+
+        <!-- 3. Authorized State (User is Owner or Collaborator) -->
+        <section id="authorized-view" class="hidden">
+            <section class="repo-slug-hero">
+                <div class="repo-badge-bar">
+                    <span class="badge badge-owner-verified">
+                        <span class="badge-dot"></span>
+                        Owner Access Verified
+                    </span>
+                    <span id="repo-visibility-badge" class="badge badge-visibility">
+                        <span class="badge-dot"></span>
+                        <span id="repo-visibility-text">Public</span>
+                    </span>
+                    <span class="badge badge-branch">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 00-3 3c0 1.3.84 2.4 2 2.82V14.18A3.001 3.001 0 009 17a3 3 0 106 0c0-1.3-.84-2.4-2-2.82V10.82c1.16-.42 2-1.52 2-2.82a3 3 0 00-3-3z"/></svg>
+                        <span id="repo-branch">main</span>
+                    </span>
+                    <span class="badge badge-branch">
+                        <span id="repo-language">Java</span>
+                    </span>
+                </div>
+
+                <div class="repo-title-wrap">
+                    <span id="repo-owner-display" class="repo-owner-prefix">owner /</span>
+                    <h2 id="repo-name-display" class="repo-name-heading">repository-name</h2>
+                </div>
+
+                <p id="repo-description-display" class="repo-description">
+                    Repository verified and loaded. You have owner privileges on this repository.
+                </p>
+            </section>
+
+            <section class="stage-placeholder-card">
+                <div class="stage-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </div>
+                <h3>Repository Ready for Analysis</h3>
+                <p>
+                    The repository manifest scanner, JGraphT directed dependency graph constructor, and reverse-BFS blast radius engine will be mounted here next.
+                </p>
+                <div>
+                    <a href="/" class="btn btn-secondary">← Select Another Repository</a>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer>
+        DepLens &bull; Java &amp; Spring Framework Lab &bull; Team 24CSB13
+    </footer>
+
+    <script>
+        function getRepoParams() {
+            const params = new URLSearchParams(window.location.search);
+            let owner = params.get('owner');
+            let repo = params.get('repo') || params.get('name');
+
+            if (!owner || !repo) {
+                const parts = window.location.pathname.split('/').filter(Boolean);
+                if (parts.length >= 3 && parts[0] === 'repo') {
+                    owner = parts[1];
+                    repo = parts[2];
+                }
+            }
+
+            return {
+                owner: owner || '',
+                repo: repo || ''
+            };
+        }
+
+        const { owner, repo } = getRepoParams();
+
+        document.getElementById('breadcrumb-owner').textContent = owner || 'unknown';
+        document.getElementById('breadcrumb-repo').textContent = repo || 'unknown';
+
+        async function verifyAccessAndLoad() {
+            const token = localStorage.getItem('deplens_jwt');
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+            }
+
+            if (!owner || !repo) {
+                showAccessDenied('Invalid repository URL parameter', 'anonymous');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/github/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`, { headers });
+                
+                // 1. Not logged in (401)
+                if (res.status === 401) {
+                    showAccessDenied('You must be signed in with GitHub to view this repository.', 'Not Signed In');
+                    return;
+                }
+
+                // 2. Logged in but not the owner / collaborator (403)
+                if (res.status === 403) {
+                    const data = await res.json().catch(() => ({}));
+                    showAccessDenied(data.message, data.currentUser || 'Current User');
+                    return;
+                }
+
+                // 3. Authorized (200 OK)
+                if (res.ok) {
+                    const repoData = await res.json();
+                    showAuthorized(repoData);
+                } else {
+                    showAccessDenied('Repository could not be found or you do not have permission.', 'Unknown');
+                }
+            } catch (err) {
+                console.error('Verification error:', err);
+                showAccessDenied('Could not verify repository ownership: ' + err.message, 'Error');
+            }
+        }
+
+        function showAccessDenied(message, currentUser) {
+            document.getElementById('verification-loading').classList.add('hidden');
+            document.getElementById('authorized-view').classList.add('hidden');
+            document.getElementById('access-denied-view').classList.remove('hidden');
+
+            document.getElementById('denied-owner-label').textContent = '@' + owner;
+            document.getElementById('denied-target-repo').textContent = owner + ' / ' + repo;
+            document.getElementById('denied-current-user').textContent = '@' + currentUser;
+            document.title = 'Access Denied – DepLens';
+        }
+
+        function showAuthorized(repoData) {
+            document.getElementById('verification-loading').classList.add('hidden');
+            document.getElementById('access-denied-view').classList.add('hidden');
+            document.getElementById('authorized-view').classList.remove('hidden');
+
+            document.title = `${repoData.name} – DepLens Intelligence`;
+            document.getElementById('repo-owner-display').textContent = (repoData.owner || owner) + ' /';
+            document.getElementById('repo-name-display').textContent = repoData.name || repo;
+
+            if (repoData.description) {
+                document.getElementById('repo-description-display').textContent = repoData.description;
+            }
+            if (repoData.language) {
+                document.getElementById('repo-language').textContent = repoData.language;
+            }
+            if (repoData.defaultBranch) {
+                document.getElementById('repo-branch').textContent = repoData.defaultBranch;
+            }
+
+            const badge = document.getElementById('repo-visibility-badge');
+            if (repoData.private) {
+                badge.className = 'badge badge-private';
+                document.getElementById('repo-visibility-text').textContent = 'Private';
+            } else {
+                badge.className = 'badge badge-visibility';
+                document.getElementById('repo-visibility-text').textContent = 'Public';
+            }
+        }
+
+        verifyAccessAndLoad();
+    </script>
+</body>
+</html>

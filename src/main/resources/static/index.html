@@ -59,6 +59,7 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
+            text-decoration: none;
         }
 
         .logo-icon {
@@ -211,81 +212,293 @@
 
         main {
             flex: 1;
-            padding: 2.5rem;
-            max-width: 1200px;
+            padding: 2rem 2.5rem 3rem;
+            max-width: 1100px;
             margin: 0 auto;
             width: 100%;
         }
 
-        .hero {
-            margin-bottom: 2.5rem;
+        /* Center Search Bar Section */
+        .center-search-section {
+            text-align: center;
+            margin: 2rem auto 3.5rem;
+            max-width: 760px;
+            position: relative;
         }
 
-        .hero h2 {
-            font-size: 2.25rem;
+        .search-badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .search-badge-tag svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .search-title {
+            font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: -0.03em;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .hero p {
+        .search-subtitle {
+            font-size: 1rem;
             color: var(--text-muted);
-            font-size: 1.05rem;
-            max-width: 760px;
+            margin-bottom: 2rem;
             line-height: 1.6;
         }
 
-        .auth-banner {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
-            border: 1px solid var(--surface-border);
+        /* Search Input Box */
+        .search-box-wrapper {
+            position: relative;
+            text-align: left;
+        }
+
+        .search-input-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid var(--surface-border);
             border-radius: 16px;
-            padding: 1.75rem;
-            margin-bottom: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-            flex-wrap: wrap;
+            padding: 0.75rem 1.25rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.25s ease;
+            cursor: text;
         }
 
-        .auth-banner-left {
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
+        .search-input-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 30px var(--accent-glow), 0 10px 40px rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
         }
 
-        .auth-icon-wrap {
-            width: 52px;
-            height: 52px;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            border-radius: 14px;
+        .search-icon {
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .auth-icon-wrap svg {
-            width: 28px;
-            height: 28px;
-            fill: var(--accent);
-        }
-
-        .auth-banner-text h3 {
-            font-size: 1.15rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .auth-banner-text p {
-            font-size: 0.88rem;
+            margin-right: 0.85rem;
             color: var(--text-muted);
+        }
+
+        .search-icon svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            transition: color 0.2s;
+        }
+
+        .search-input-bar:focus-within .search-icon svg {
+            color: var(--accent);
+        }
+
+        .search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .search-input::placeholder {
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .search-shortcut {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 0.25rem 0.55rem;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            letter-spacing: 0.05em;
+        }
+
+        /* Dropdown Results */
+        .search-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            max-height: 420px;
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+            animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-header {
+            padding: 0.85rem 1.25rem;
+            border-bottom: 1px solid var(--surface-border);
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .dropdown-list {
+            padding: 0.5rem;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .dropdown-item:hover, .dropdown-item.active {
+            background: #1e293b;
+            transform: translateX(4px);
+        }
+
+        .repo-item-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            min-width: 0;
+        }
+
+        .repo-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--text-muted);
+        }
+
+        .dropdown-item:hover .repo-item-icon {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent);
+        }
+
+        .repo-item-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .repo-item-text {
+            min-width: 0;
+        }
+
+        .repo-item-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .repo-item-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 440px;
+            margin-top: 2px;
+        }
+
+        .repo-item-right {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-shrink: 0;
+        }
+
+        .repo-badge {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+        }
+
+        .badge-private {
+            background: rgba(251, 191, 36, 0.12);
+            color: var(--warning);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .badge-public {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .repo-lang-tag {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .lang-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #f59e0b;
+        }
+
+        .dropdown-empty {
+            padding: 2rem 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 1.5rem;
+            margin-top: 1rem;
             margin-bottom: 2.5rem;
         }
 
@@ -320,28 +533,6 @@
             margin-bottom: 1rem;
         }
 
-        .status-pill {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            padding: 0.25rem 0.6rem;
-            border-radius: 6px;
-            background: #1e293b;
-            color: #cbd5e1;
-            display: inline-block;
-        }
-
-        .card pre {
-            background: #020617;
-            padding: 0.85rem;
-            border-radius: 8px;
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            color: #38bdf8;
-            overflow-x: auto;
-            border: 1px solid #1e293b;
-            max-height: 200px;
-        }
-
         .user-detail-row {
             display: flex;
             justify-content: space-between;
@@ -371,6 +562,7 @@
             color: var(--text-muted);
             font-size: 0.8rem;
             font-family: var(--font-mono);
+            margin-top: auto;
         }
 
         .hidden {
@@ -380,15 +572,15 @@
 </head>
 <body>
     <header>
-        <div class="logo-wrap">
+        <a href="/" class="logo-wrap">
             <div class="logo-icon">
                 <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </div>
             <div class="logo-text">
                 <h1>DepLens</h1>
-                <p>Software Supply Chain Intelligence &amp; Blast Radius Engine</p>
+                <p>Supply Chain Intelligence &amp; Blast Radius Engine</p>
             </div>
-        </div>
+        </a>
 
         <div class="header-actions">
             <!-- Logged Out View -->
@@ -409,7 +601,7 @@
                     <div class="user-info">
                         <span id="nav-name" class="user-name">User</span>
                         <span class="user-session">
-                            <span class="session-dot"></span> 30-Day Session Active
+                            <span class="session-dot"></span> 30-Day Session
                         </span>
                     </div>
                 </div>
@@ -419,62 +611,80 @@
     </header>
 
     <main>
-        <section class="hero">
-            <h2>Supply Chain Intelligence &amp; Blast Radius Engine</h2>
-            <p>DepLens combines directed dependency graph analysis, AST source code exposure checks, reverse-BFS blast radius computations, and AI-driven remediation guidance.</p>
+        <!-- Center Add Repository Search Section -->
+        <section class="center-search-section">
+            <div class="search-badge-tag">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <span>Add Repository</span>
+            </div>
+            <h2 class="search-title">Analyze Your Repositories</h2>
+            <p class="search-subtitle">
+                Search through your GitHub account (public or private) to link a repository for dependency tree parsing, AST exposure checks, and blast radius calculations.
+            </p>
+
+            <div class="search-box-wrapper" id="search-box-container">
+                <div class="search-input-bar" id="search-bar" onclick="focusSearch()">
+                    <div class="search-icon">
+                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    </div>
+                    <input type="text" id="repo-search-input" class="search-input" placeholder="Type repository name to search..." autocomplete="off" />
+                    <span class="search-shortcut">⌘K</span>
+                </div>
+
+                <!-- Dropdown Results -->
+                <div class="search-dropdown-menu hidden" id="search-dropdown">
+                    <div class="dropdown-header">
+                        <span id="dropdown-count-label">Repositories in your account</span>
+                        <span>ESC to close</span>
+                    </div>
+                    <div class="dropdown-list" id="dropdown-repo-list">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <!-- Dynamic Auth Banner -->
-        <div class="auth-banner">
-            <div class="auth-banner-left">
-                <div class="auth-icon-wrap">
-                    <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                </div>
-                <div class="auth-banner-text">
-                    <h3 id="banner-title">Authentication &amp; Session Status</h3>
-                    <p id="banner-subtitle">Checking JWT session...</p>
-                </div>
-            </div>
-            <div id="banner-action">
-                <!-- Action populated via JS -->
-            </div>
-        </div>
-
+        <!-- Informational Cards Grid -->
         <section class="grid">
-            <!-- User Session Card -->
             <div class="card">
-                <h3>Session Details (30-Day JWT)</h3>
-                <p>JWT tokens persist in localStorage and secure cookies with a 30-day expiration window.</p>
+                <h3>Session Details</h3>
+                <p>Persistent 30-day JWT authentication linked to your GitHub identity.</p>
                 <div id="user-details-list">
-                    <pre id="token-status">No active session found</pre>
+                    <pre style="color: #94a3b8; font-size: 0.8rem;">Loading session details...</pre>
                 </div>
             </div>
 
-            <!-- Backend Status Card -->
             <div class="card">
-                <h3>Spring Boot &amp; Security</h3>
-                <p>Spring Security 6 with OAuth2 Client and stateless JJWT authentication filter.</p>
-                <button class="btn btn-secondary" onclick="testHealth()">Test /api/health</button>
-                <div style="margin-top: 1rem;">
-                    <pre id="api-output">Click button to test /api/health</pre>
+                <h3>Graph &amp; Blast Radius Engine</h3>
+                <p>Constructs directed graphs via JGraphT 1.5.2 and source ASTs via JavaParser 3.26.1.</p>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Dependency Parser</span>
+                    <span class="user-detail-val">pom.xml / package.json</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Graph Calculation</span>
+                    <span class="user-detail-val">Reverse-BFS Radius</span>
+                </div>
+                <div class="user-detail-row">
+                    <span class="user-detail-label">Exposure Mapping</span>
+                    <span class="user-detail-val">Source Line AST</span>
                 </div>
             </div>
 
-            <!-- Database & Engine Card -->
             <div class="card">
                 <h3>MySQL Persistence</h3>
-                <p>User identities, scan histories, and dependency graphs stored in MySQL <code>deplens_db</code>.</p>
+                <p>Stores dependency metadata, scan history, and findings in <code>deplens_db</code>.</p>
                 <div class="user-detail-row">
                     <span class="user-detail-label">Database</span>
-                    <span class="user-detail-val">deplens_db (Local)</span>
+                    <span class="user-detail-val">deplens_db (Connected)</span>
                 </div>
                 <div class="user-detail-row">
-                    <span class="user-detail-label">JPA Auto-DDL</span>
-                    <span class="user-detail-val">update</span>
+                    <span class="user-detail-label">Driver</span>
+                    <span class="user-detail-val">MySQL Connector/J</span>
                 </div>
                 <div class="user-detail-row">
-                    <span class="user-detail-label">Graph Engine</span>
-                    <span class="user-detail-val">JGraphT 1.5.2</span>
+                    <span class="user-detail-label">ORM</span>
+                    <span class="user-detail-val">Hibernate 6 / JPA</span>
                 </div>
             </div>
         </section>
@@ -485,23 +695,24 @@
     </footer>
 
     <script>
+        let allUserRepos = [];
+        let isAuthenticated = false;
+
         // Check for token in URL query parameter (redirected from OAuth2 callback)
         (function handleOAuthRedirect() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             if (token) {
                 localStorage.setItem('deplens_jwt', token);
-                // Clean the URL without reloading
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         })();
 
-        // Retrieve current active token
         function getToken() {
             return localStorage.getItem('deplens_jwt');
         }
 
-        // Check authentication state on page load
+        // Check auth status
         async function checkAuthState() {
             const token = getToken();
             const headers = { 'Content-Type': 'application/json' };
@@ -514,12 +725,15 @@
                 const data = await res.json();
 
                 if (data.authenticated) {
+                    isAuthenticated = true;
                     renderLoggedIn(data);
+                    loadRepositories();
                 } else {
+                    isAuthenticated = false;
                     renderLoggedOut();
                 }
             } catch (err) {
-                console.error('Auth check error:', err);
+                console.error('Auth error:', err);
                 renderLoggedOut();
             }
         }
@@ -531,37 +745,19 @@
             document.getElementById('nav-name').textContent = user.name || user.username;
             document.getElementById('nav-avatar').src = user.avatarUrl || 'https://github.com/identicons/' + user.username + '.png';
 
-            document.getElementById('banner-title').textContent = 'Logged In as @' + user.username;
-            document.getElementById('banner-subtitle').textContent = 'Session valid for 30 days. Ready for repository scans and blast-radius analysis.';
-            document.getElementById('banner-action').innerHTML = `
-                <button class="btn btn-danger" onclick="logout()">Sign Out</button>
-            `;
-
             const detailsHtml = `
                 <div class="user-detail-row">
-                    <span class="user-detail-label">GitHub Username</span>
+                    <span class="user-detail-label">User</span>
                     <span class="user-detail-val">@${user.username}</span>
                 </div>
                 <div class="user-detail-row">
-                    <span class="user-detail-label">Full Name</span>
-                    <span class="user-detail-val">${user.name || 'N/A'}</span>
+                    <span class="user-detail-label">Session</span>
+                    <span class="user-detail-val" style="color: var(--success);">${user.sessionDays} Days (Active)</span>
                 </div>
                 <div class="user-detail-row">
-                    <span class="user-detail-label">Email</span>
-                    <span class="user-detail-val">${user.email || 'N/A'}</span>
-                </div>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">Role</span>
-                    <span class="user-detail-val">${user.role}</span>
-                </div>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">Session Duration</span>
-                    <span class="user-detail-val" style="color: var(--success);">${user.sessionDays} Days</span>
-                </div>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">GitHub Token Attached</span>
+                    <span class="user-detail-label">GitHub Token</span>
                     <span class="user-detail-val" style="color: ${user.hasGithubToken ? 'var(--success)' : 'var(--warning)'};">
-                        ${user.hasGithubToken ? 'Yes (API Scans Ready)' : 'No (Dev Session)'}
+                        ${user.hasGithubToken ? 'Connected (API Ready)' : 'Dev Token'}
                     </span>
                 </div>
             `;
@@ -571,18 +767,157 @@
         function renderLoggedOut() {
             document.getElementById('auth-logged-in').classList.add('hidden');
             document.getElementById('auth-logged-out').classList.remove('hidden');
-
-            document.getElementById('banner-title').textContent = 'Authentication Required';
-            document.getElementById('banner-subtitle').textContent = 'Sign in with GitHub to link repositories and inspect software supply chain dependencies.';
-            document.getElementById('banner-action').innerHTML = `
-                <a href="/oauth2/authorization/github" class="btn btn-github">
-                    Sign in with GitHub
-                </a>
-            `;
-
             document.getElementById('user-details-list').innerHTML = `
-                <pre id="token-status">No active 30-day session.\nClick 'Sign in with GitHub' or 'Dev Quick-Login' above.</pre>
+                <pre style="color: #94a3b8; font-size: 0.8rem;">No active session.\nSign in with GitHub or click Dev Quick-Login above.</pre>
             `;
+        }
+
+        // Fetch user repositories
+        async function loadRepositories() {
+            const token = getToken();
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = 'Bearer ' + token;
+            }
+
+            try {
+                const res = await fetch('/api/github/repos', { headers });
+                if (res.ok) {
+                    allUserRepos = await res.json();
+                }
+            } catch (e) {
+                console.error('Failed to load repositories:', e);
+            }
+        }
+
+        // Search bar interactions
+        const searchInput = document.getElementById('repo-search-input');
+        const searchDropdown = document.getElementById('search-dropdown');
+        const dropdownList = document.getElementById('dropdown-repo-list');
+        const dropdownCount = document.getElementById('dropdown-count-label');
+
+        function focusSearch() {
+            searchInput.focus();
+        }
+
+        searchInput.addEventListener('focus', () => {
+            if (!isAuthenticated) {
+                renderUnauthenticatedDropdown();
+                searchDropdown.classList.remove('hidden');
+                return;
+            }
+            filterAndDisplayRepos(searchInput.value);
+            searchDropdown.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            if (!isAuthenticated) {
+                renderUnauthenticatedDropdown();
+                return;
+            }
+            filterAndDisplayRepos(e.target.value);
+        });
+
+        function filterAndDisplayRepos(query) {
+            const cleanQuery = (query || '').toLowerCase().trim();
+            const filtered = allUserRepos.filter(r => 
+                r.name.toLowerCase().includes(cleanQuery) || 
+                r.fullName.toLowerCase().includes(cleanQuery) ||
+                (r.description && r.description.toLowerCase().includes(cleanQuery))
+            );
+
+            dropdownCount.textContent = `${filtered.length} Repositories found`;
+
+            if (filtered.length === 0) {
+                dropdownList.innerHTML = `
+                    <div class="dropdown-empty">
+                        No repositories matching "<strong>${escapeHtml(cleanQuery)}</strong>" found in your account.
+                    </div>
+                `;
+                return;
+            }
+
+            dropdownList.innerHTML = filtered.map(repo => {
+                const iconSvg = repo.private ? 
+                    `<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>` :
+                    `<svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>`;
+
+                const visibilityBadge = repo.private ? 
+                    `<span class="repo-badge badge-private">Private</span>` : 
+                    `<span class="repo-badge badge-public">Public</span>`;
+
+                return `
+                    <div class="dropdown-item" onclick="selectRepository('${escapeHtml(repo.owner)}', '${escapeHtml(repo.name)}')">
+                        <div class="repo-item-left">
+                            <div class="repo-item-icon">
+                                ${iconSvg}
+                            </div>
+                            <div class="repo-item-text">
+                                <div class="repo-item-name">${escapeHtml(repo.fullName || repo.name)}</div>
+                                <div class="repo-item-desc">${escapeHtml(repo.description || 'No description provided')}</div>
+                            </div>
+                        </div>
+                        <div class="repo-item-right">
+                            ${visibilityBadge}
+                            <span class="repo-lang-tag">
+                                <span class="lang-dot"></span>
+                                ${escapeHtml(repo.language || 'Java')}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderUnauthenticatedDropdown() {
+            dropdownCount.textContent = 'Authentication Required';
+            dropdownList.innerHTML = `
+                <div class="dropdown-empty">
+                    <p style="margin-bottom: 1rem;">Please sign in with GitHub to view and search repositories in your account.</p>
+                    <a href="/oauth2/authorization/github" class="btn btn-github" style="display: inline-flex;">Sign in with GitHub</a>
+                </div>
+            `;
+        }
+
+        // On clicking a repository from the search list, navigate to the slug page
+        function selectRepository(owner, name) {
+            // Find full repo metadata to cache for slug page
+            const repoData = allUserRepos.find(r => r.owner === owner && r.name === name);
+            if (repoData) {
+                sessionStorage.setItem('selected_repo_' + owner + '_' + name, JSON.stringify(repoData));
+            }
+            // Navigate to slug page
+            window.location.href = `/repo.html?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(name)}`;
+        }
+
+        // Close dropdown when clicking outside or pressing ESC
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('search-box-container');
+            if (!container.contains(e.target)) {
+                searchDropdown.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            // Cmd+K or Ctrl+K to focus search
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+            if (e.key === 'Escape') {
+                searchDropdown.classList.add('hidden');
+                searchInput.blur();
+            }
+        });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         async function quickDevLogin() {
@@ -603,19 +938,9 @@
                 await fetch('/api/auth/logout', { method: 'POST' });
             } catch (e) {}
             localStorage.removeItem('deplens_jwt');
+            isAuthenticated = false;
+            allUserRepos = [];
             renderLoggedOut();
-        }
-
-        async function testHealth() {
-            const out = document.getElementById('api-output');
-            out.textContent = 'Calling /api/health...';
-            try {
-                const res = await fetch('/api/health');
-                const data = await res.json();
-                out.textContent = JSON.stringify(data, null, 2);
-            } catch (err) {
-                out.textContent = 'Error: ' + err.message;
-            }
         }
 
         // Run on load
