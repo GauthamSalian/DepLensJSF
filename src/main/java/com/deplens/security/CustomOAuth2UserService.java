@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
@@ -78,6 +79,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     return userRepository.save(newUser);
                 });
 
+        Objects.requireNonNull(user, "User cannot be null after upsert");
         return UserPrincipal.create(user, attributes);
     }
 }

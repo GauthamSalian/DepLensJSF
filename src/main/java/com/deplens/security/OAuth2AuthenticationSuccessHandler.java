@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -48,7 +49,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     ) throws IOException {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        User user = userRepository.findById(userPrincipal.getId())
+        Long userId = Objects.requireNonNull(userPrincipal.getId(), "UserPrincipal id must not be null");
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found after authentication"));
 
         // If authenticated via OAuth2, capture the GitHub access token for GitHub API repository scans
@@ -79,7 +81,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         response.addCookie(cookie);
 
         // Redirect to frontend with token parameter
-        String targetUrl = UriComponentsBuilder.fromUriString(redirectUri)
+        String targetBaseUri = (redirectUri != null && !redirectUri.isBlank()) ? redirectUri : "http://localhost:8080";
+        String targetUrl = UriComponentsBuilder.fromUriString(targetBaseUri)
                 .queryParam("token", token)
                 .build().toUriString();
 

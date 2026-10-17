@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,11 +34,12 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> getCurrentUser(
             @AuthenticationPrincipal UserPrincipal userPrincipal
     ) {
-        if (userPrincipal == null) {
+        if (userPrincipal == null || userPrincipal.getId() == null) {
             return ResponseEntity.ok(Map.of("authenticated", false));
         }
 
-        User user = userRepository.findById(userPrincipal.getId()).orElse(null);
+        Long userId = userPrincipal.getId();
+        User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             return ResponseEntity.ok(Map.of("authenticated", false));
         }
@@ -94,7 +96,8 @@ public class AuthController {
                             .avatarUrl("https://github.com/" + username + ".png")
                             .role("ROLE_USER")
                             .build();
-                    return userRepository.save(newUser);
+                    User saved = userRepository.save(newUser);
+                    return Objects.requireNonNull(saved, "Saved user must not be null");
                 });
 
         String token = tokenProvider.generateToken(user);
@@ -112,11 +115,11 @@ public class AuthController {
                 "tokenType", "Bearer",
                 "expiresInDays", 30,
                 "user", Map.of(
-                        "id", user.getId(),
+                        "id", user.getId() != null ? user.getId() : 0L,
                         "username", user.getUsername(),
-                        "name", user.getName(),
-                        "email", user.getEmail(),
-                        "avatarUrl", user.getAvatarUrl()
+                        "name", user.getName() != null ? user.getName() : user.getUsername(),
+                        "email", user.getEmail() != null ? user.getEmail() : "",
+                        "avatarUrl", user.getAvatarUrl() != null ? user.getAvatarUrl() : ""
                 )
         ));
     }

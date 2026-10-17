@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "app.jwt.secret",
+      "type": "java.lang.String",
+      "description": "Secret key used for HMAC signing of JWT tokens."
+    },
+    {
+      "name": "app.jwt.expiration-ms",
+      "type": "java.lang.Long",
+      "description": "JWT token expiration in milliseconds (default: 30 days = 2592000000)."
+    },
+    {
+      "name": "app.oauth2.authorized-redirect-uri",
+      "type": "java.lang.String",
+      "description": "Authorized redirect URI after OAuth2 authentication."
+    }
+  ]
+}
