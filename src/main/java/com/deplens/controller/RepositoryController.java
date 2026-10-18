@@ -22,10 +22,13 @@ public class RepositoryController {
 
     private final GitHubService gitHubService;
     private final UserRepository userRepository;
+    private final com.deplens.service.RepositoryScanService repositoryScanService;
 
-    public RepositoryController(GitHubService gitHubService, UserRepository userRepository) {
+    public RepositoryController(GitHubService gitHubService, UserRepository userRepository,
+                                com.deplens.service.RepositoryScanService repositoryScanService) {
         this.gitHubService = gitHubService;
         this.userRepository = userRepository;
+        this.repositoryScanService = repositoryScanService;
     }
 
     /**
@@ -85,7 +88,80 @@ public class RepositoryController {
             ));
         }
 
-        return ResponseEntity.ok(repoOpt.get());
+        RepositoryDto repo = repoOpt.get();
+
+        // Automatically store / update scan state in MySQL if commit changed
+        try {
+            repositoryScanService.recordOrGetScanState(
+                    user,
+                    repo.getOwner(),
+                    repo.getName(),
+                    repo.getDefaultBranch(),
+                    repo.isPrivate(),
+                    repo.getHtmlUrl(),
+                    repo.getLatestCommitSha(),
+                    repo.getLatestCommitMessage(),
+                    repo.getLatestCommitDate(),
+                    repo.getLatestCommitAuthor(),
+                    repo.getDetectedManifests(),
+                    repo.getEcosystems()
+            );
+        } catch (Exception ex) {
+            // Log but don't fail basic repository info response
+            org.slf4j.LoggerFactory.getLogger(RepositoryController.class)
+                    .warn("Failed to record scan state in MySQL: {}", ex.getMessage());
+        }
+
+        return ResponseEntity.ok(repo);
+    }
+
+    /**
+     * API endpoint returning the persisted repository scan state, dependency graph, and metrics from MySQL.
+     */
+    @GetMapping("/api/scan/state/{owner}/{name}")
+    @ResponseBody
+    public ResponseEntity<?> getRepositoryScanState(
+            @PathVariable String owner,
+            @PathVariable String name,
+            @AuthenticationPrincipal UserPrincipal userPrincipal
+    ) {
+        if (userPrincipal == null || userPrincipal.getId() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized", "message", "You must be signed in to access repository scan state."));
+        }
+
+        Long userId = Objects.requireNonNull(userPrincipal.getId(), "User id must not be null");
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized", "message", "User session not found."));
+        }
+
+        Optional<RepositoryDto> repoOpt = gitHubService.getRepositoryDetails(user, owner, name);
+        if (repoOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "error", "Forbidden",
+                    "message", "Access denied. Only the repository owner (@" + owner + ") or authorized collaborators have permission to view supply chain intelligence."
+            ));
+        }
+
+        RepositoryDto repo = repoOpt.get();
+        com.deplens.model.RepositoryStateEntity state = repositoryScanService.recordOrGetScanState(
+                user,
+                repo.getOwner(),
+                repo.getName(),
+                repo.getDefaultBranch(),
+                repo.isPrivate(),
+                repo.getHtmlUrl(),
+                repo.getLatestCommitSha(),
+                repo.getLatestCommitMessage(),
+                repo.getLatestCommitDate(),
+                repo.getLatestCommitAuthor(),
+                repo.getDetectedManifests(),
+                repo.getEcosystems()
+        );
+
+        return ResponseEntity.ok(state);
     }
 
     /**
@@ -99,3 +175,4 @@ public class RepositoryController {
         return "forward:/repo.html";
     }
 }
+

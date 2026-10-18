@@ -277,6 +277,40 @@ public class GitHubService {
         }
     }
 
+    /**
+     * Retrieves the raw decoded text content of a file from GitHub repository
+     */
+    public Optional<String> getFileContent(User user, String owner, String repoName, String filePath) {
+        String token = user != null ? user.getGithubAccessToken() : null;
+        if (token != null && !token.isBlank()) {
+            try {
+                HttpHeaders headers = createAuthHeaders(token);
+                HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+                String url = "https://api.github.com/repos/" + owner + "/" + repoName + "/contents/" + filePath;
+                ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                        url,
+                        HttpMethod.valueOf("GET"),
+                        entity,
+                        new ParameterizedTypeReference<Map<String, Object>>() {}
+                );
+
+                Map<String, Object> body = response.getBody();
+                if (body != null && body.containsKey("content")) {
+                    String base64Content = (String) body.get("content");
+                    if (base64Content != null) {
+                        String cleaned = base64Content.replace("\n", "").replace("\r", "");
+                        byte[] decoded = Base64.getDecoder().decode(cleaned);
+                        return Optional.of(new String(decoded, java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                }
+            } catch (Exception ex) {
+                log.warn("Could not fetch file content for {}/{}/{}: {}", owner, repoName, filePath, ex.getMessage());
+            }
+        }
+        return Optional.empty();
+    }
+
     private HttpHeaders createAuthHeaders(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
