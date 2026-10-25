@@ -43,6 +43,9 @@ class RepositoryScanServiceTest {
     @Mock
     private GitHubService gitHubService;
 
+    @Mock
+    private OsvVulnerabilityClient osvClient;
+
     @Spy
     private DependencyParserService dependencyParserService = new DependencyParserService();
 
