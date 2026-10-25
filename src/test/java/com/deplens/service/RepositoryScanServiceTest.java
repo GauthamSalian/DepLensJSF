@@ -177,6 +177,37 @@ class RepositoryScanServiceTest {
     }
 
     @Test
+    @DisplayName("Cached state with pending OSV details is rescanned instead of reused")
+    void testPendingOsvDetailsAreRescanned() {
+        RepositoryStateEntity existingState = new RepositoryStateEntity(
+                sampleRepo, "4082c07", "feat: implement graph schema",
+                "2026-10-18T08:00:00Z", "Gautham Salian", "[\"pom.xml\"]", "[\"Maven\"]"
+        );
+        DependencyGraphEntity oldGraph = new DependencyGraphEntity(existingState, "[]", "[]", 1, 0, 1, 0, 1);
+        PackageMetricEntity oldMetric = new PackageMetricEntity("axios", "1.6.0", true, "npm");
+        oldMetric.setCvesJson("[{\"cveId\":\"GHSA-x\",\"cvss\":5.0,\"detailsPending\":true}]");
+        oldGraph.addMetric(oldMetric);
+        existingState.setDependencyGraph(oldGraph);
+
+        when(repositoryRepo.findFirstByFullNameIgnoreCase("GauthamSalian/DepLensJSF"))
+                .thenReturn(Optional.of(sampleRepo));
+        when(stateRepo.findFirstByRepositoryOrderByLastScannedAtDesc(sampleRepo))
+                .thenReturn(Optional.of(existingState));
+        when(stateRepo.save(any(RepositoryStateEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        RepositoryStateEntity result = scanService.recordOrGetScanState(
+                "GauthamSalian", "DepLensJSF", "main", false,
+                "https://github.com/GauthamSalian/DepLensJSF",
+                "4082c07", "feat: implement graph schema", "2026-10-18T08:00:00Z", "Gautham Salian",
+                List.of("pom.xml"), List.of("Maven")
+        );
+
+        assertNotSame(existingState, result, "Pending OSV details should trigger a fresh scan");
+        verify(osvClient, times(1)).findVulnerabilities(any(), any());
+    }
+
+    @Test
     @DisplayName("Should return cached state if commit SHA has not changed")
     void testCacheHitWhenCommitUnchanged() {
         RepositoryStateEntity existingState = new RepositoryStateEntity(

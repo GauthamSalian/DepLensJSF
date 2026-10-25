@@ -89,9 +89,12 @@ public class RepositoryScanService {
         if (existingStateOpt.isPresent()) {
             RepositoryStateEntity existing = existingStateOpt.get();
             if (commitSha != null && commitSha.equalsIgnoreCase(existing.getLatestCommitSha())) {
-                log.info("Repository {} commit {} has not changed. Returning cached state.", fullName, commitSha);
-                existing.setLastScannedAt(LocalDateTime.now());
-                return stateRepo.save(existing);
+                if (!hasPendingOsvDetails(existing)) {
+                    log.info("Repository {} commit {} has not changed. Returning cached state.", fullName, commitSha);
+                    existing.setLastScannedAt(LocalDateTime.now());
+                    return stateRepo.save(existing);
+                }
+                log.info("Cached state for {} has OSV details that failed to load. Rescanning to retry them.", fullName);
             }
         }
 
@@ -353,6 +356,15 @@ public class RepositoryScanService {
                 transitiveCount,
                 maxDepth
         );
+    }
+
+    private boolean hasPendingOsvDetails(RepositoryStateEntity state) {
+        DependencyGraphEntity graph = state.getDependencyGraph();
+        if (graph == null || graph.getPackageMetrics() == null) return false;
+        for (PackageMetricEntity metric : graph.getPackageMetrics()) {
+            if (OsvVulnerabilityClient.hasPendingDetails(metric.getCvesJson())) return true;
+        }
+        return false;
     }
 
     public Optional<DependencyGraphEntity> getGraphForState(RepositoryStateEntity state) {
