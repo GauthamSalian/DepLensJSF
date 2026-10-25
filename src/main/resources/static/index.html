@@ -4,199 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DepLens – Software Supply Chain Intelligence</title>
+    <meta name="description" content="DepLens maps your repository's dependencies, flags known vulnerabilities and shows how far a risky package can spread.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%230284c7%27/%3E%3Cpath d=%27M16 6 6 11l10 5 10-5-10-5zM6 21l10 5 10-5M6 16l10 5 10-5%27 fill=%27none%27 stroke=%27white%27 stroke-width=%272.2%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="/css/deplens.css">
+    <script src="/js/ui.js"></script>
     <style>
-        :root {
-            --bg: #090d16;
-            --surface: #0f172a;
-            --surface-hover: #131d35;
-            --surface-border: #1e293b;
-            --accent: #38bdf8;
-            --accent-glow: rgba(56, 189, 248, 0.2);
-            --danger: #f43f5e;
-            --warning: #fbbf24;
-            --success: #34d399;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 85%, rgba(244, 63, 94, 0.06) 0%, transparent 40%);
-        }
-
-        header {
-            padding: 1rem 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--surface-border);
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(12px);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .logo-wrap {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            text-decoration: none;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #0284c7, #38bdf8);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        .logo-icon svg {
-            width: 22px;
-            height: 22px;
-            fill: white;
-        }
-
-        .logo-text h1 {
-            font-size: 1.25rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            background: linear-gradient(to right, #ffffff, #cbd5e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .logo-text p {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            font-family: var(--font-mono);
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: var(--sp-3);
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: linear-gradient(135deg, #0284c7, #0ea5e9);
-            color: white;
-            font-weight: 600;
-            font-size: 0.85rem;
-            border: none;
-            padding: 0.6rem 1.25rem;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s ease;
+        .header-skeleton {
+            width: 180px;
+            height: 36px;
+            border-radius: var(--r-md);
         }
 
-        .btn:hover {
-            opacity: 0.92;
-            transform: translateY(-1px);
-        }
-
-        .btn-github {
-            background: #24292f;
-            border: 1px solid #30363d;
-            color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-        }
-
-        .btn-github:hover {
-            background: #2f363d;
-            border-color: #8b949e;
-        }
-
-        .btn-github svg {
-            width: 18px;
-            height: 18px;
-            fill: currentColor;
-        }
-
-        .btn-secondary {
-            background: #1e293b;
-            color: #94a3b8;
-            border: 1px solid var(--surface-border);
-        }
-
-        .btn-secondary:hover {
-            background: #334155;
-            color: #f8fafc;
-        }
-
-        .btn-danger {
-            background: rgba(244, 63, 94, 0.15);
-            border: 1px solid rgba(244, 63, 94, 0.3);
-            color: var(--danger);
-        }
-
-        .btn-danger:hover {
-            background: rgba(244, 63, 94, 0.25);
-        }
-
-        /* User profile in header */
+        /* Signed-in user pill */
         .user-profile-badge {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid var(--surface-border);
-            padding: 0.4rem 0.85rem;
-            border-radius: 9999px;
+            gap: var(--sp-3);
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            padding: 0.3rem 0.85rem 0.3rem 0.3rem;
+            border-radius: var(--r-pill);
         }
 
         .user-avatar {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            border: 2px solid var(--accent);
+            border: 2px solid var(--c-accent);
             object-fit: cover;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        .user-initials {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--c-accent-deep), #6366f1);
+            color: #fff;
+            font-size: var(--fs-xs);
+            font-weight: 800;
+            flex-shrink: 0;
         }
 
         .user-info {
             display: flex;
             flex-direction: column;
             line-height: 1.2;
+            min-width: 0;
         }
 
         .user-name {
-            font-size: 0.85rem;
+            font-size: var(--fs-sm);
             font-weight: 700;
-            color: var(--text-main);
+            color: var(--c-text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
         }
 
         .user-session {
-            font-size: 0.7rem;
-            font-family: var(--font-mono);
-            color: var(--success);
+            font-size: var(--fs-2xs);
+            color: var(--sev-low-text);
             display: flex;
             align-items: center;
             gap: 0.3rem;
@@ -206,213 +88,393 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 6px var(--success);
+            background: var(--c-success);
+            box-shadow: 0 0 6px var(--c-success);
         }
 
         main {
             flex: 1;
-            padding: 2rem 2.5rem 3rem;
-            max-width: 1100px;
-            margin: 0 auto;
             width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: var(--sp-7) var(--sp-7) var(--sp-8);
         }
 
-        /* Center Search Bar Section */
-        .center-search-section {
-            text-align: center;
-            margin: 2rem auto 3.5rem;
-            max-width: 760px;
-            position: relative;
+        /* --------------------------------------------------------------
+           Hero
+           -------------------------------------------------------------- */
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+            gap: var(--sp-8);
+            align-items: center;
+            padding: var(--sp-6) 0 var(--sp-7);
         }
 
-        .search-badge-tag {
+        .hero-copy > * {
+            animation: fadeUp 0.6s var(--ease) both;
+        }
+
+        .hero-copy > *:nth-child(2) { animation-delay: 0.06s; }
+        .hero-copy > *:nth-child(3) { animation-delay: 0.12s; }
+        .hero-copy > *:nth-child(4) { animation-delay: 0.18s; }
+        .hero-copy > *:nth-child(5) { animation-delay: 0.24s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .eyebrow {
             display: inline-flex;
             align-items: center;
-            gap: 0.45rem;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            color: var(--accent);
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 0.35rem 0.85rem;
-            border-radius: 9999px;
-            margin-bottom: 1rem;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
+            gap: var(--sp-2);
+            background: var(--c-accent-soft);
+            border: 1px solid var(--c-accent-border);
+            color: var(--c-accent-text);
+            font-size: var(--fs-xs);
+            font-weight: 700;
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--r-pill);
+            margin-bottom: var(--sp-5);
         }
 
-        .search-badge-tag svg {
-            width: 14px;
-            height: 14px;
-            fill: currentColor;
+        .eyebrow .pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--c-accent);
+            animation: pulseDot 2s infinite;
         }
 
-        .search-title {
-            font-size: 2.5rem;
+        @keyframes pulseDot {
+            0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+        }
+
+        .hero-title {
+            font-size: var(--fs-3xl);
             font-weight: 800;
-            letter-spacing: -0.03em;
-            margin-bottom: 0.75rem;
-            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            letter-spacing: -0.035em;
+            line-height: 1.08;
+            margin-bottom: var(--sp-4);
+            color: #fff;
+        }
+
+        .hero-title .grad {
+            background: linear-gradient(90deg, var(--c-accent) 0%, #818cf8 55%, var(--sev-critical) 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .search-subtitle {
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            line-height: 1.6;
+        .hero-lead {
+            font-size: 1.08rem;
+            color: var(--c-text-muted);
+            line-height: 1.65;
+            max-width: 560px;
+            margin-bottom: var(--sp-6);
         }
 
-        /* Search Input Box */
+        .hero-cta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--sp-3);
+        }
+
+        .hero-note {
+            margin-top: var(--sp-4);
+            font-size: var(--fs-xs);
+            color: var(--c-text-subtle);
+            display: flex;
+            align-items: center;
+            gap: var(--sp-2);
+        }
+
+        .hero-note svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        .hero-welcome {
+            font-size: var(--fs-md);
+            color: var(--c-text-muted);
+        }
+
+        .hero-welcome strong {
+            color: var(--c-text);
+        }
+
+        .cta-skeleton {
+            width: 260px;
+            max-width: 100%;
+            height: 46px;
+            border-radius: var(--r-lg);
+        }
+
+        /* --------------------------------------------------------------
+           Animated mini graph
+           -------------------------------------------------------------- */
+        .hero-visual {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            border-radius: var(--r-xl);
+            border: 1px solid var(--c-border);
+            background: radial-gradient(circle at 50% 50%, rgba(13, 23, 46, 0.9) 0%, rgba(6, 9, 18, 0.95) 100%);
+            box-shadow: var(--shadow-lg), inset 0 0 50px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            animation: fadeUp 0.8s var(--ease) 0.15s both;
+        }
+
+        .hero-visual::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+            background-size: 28px 28px;
+        }
+
+        .hero-visual svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mg-edge {
+            stroke: #33415c;
+            stroke-width: 1.6;
+        }
+
+        .mg-edge.hot {
+            stroke: var(--sev-critical);
+            stroke-width: 2.2;
+            stroke-dasharray: 6 5;
+            animation: mgFlow 0.9s linear infinite;
+        }
+
+        @keyframes mgFlow {
+            to { stroke-dashoffset: -22; }
+        }
+
+        .mg-node {
+            animation: mgFloat 5s ease-in-out infinite;
+        }
+
+        .mg-node:nth-of-type(2n) { animation-delay: -1.6s; }
+        .mg-node:nth-of-type(3n) { animation-delay: -3.1s; }
+
+        @keyframes mgFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .mg-ring {
+            fill: none;
+            stroke: var(--sev-critical);
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: mgRing 2.2s var(--ease) infinite;
+        }
+
+        @keyframes mgRing {
+            0% { transform: scale(1); opacity: 0.9; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        .mg-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            fill: #cbd5e1;
+        }
+
+        .hero-visual-card {
+            position: absolute;
+            left: var(--sp-4);
+            bottom: var(--sp-4);
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid var(--c-border-strong);
+            border-radius: var(--r-md);
+            padding: 0.6rem 0.8rem;
+            font-size: var(--fs-xs);
+            color: var(--c-text-muted);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: var(--sp-3);
+        }
+
+        .hero-visual-card strong {
+            display: block;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: var(--fs-sm);
+        }
+
+        /* --------------------------------------------------------------
+           Search
+           -------------------------------------------------------------- */
         .search-box-wrapper {
             position: relative;
-            text-align: left;
+            max-width: 620px;
+            margin-top: var(--sp-5);
         }
 
         .search-input-bar {
             display: flex;
             align-items: center;
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid var(--surface-border);
-            border-radius: 16px;
-            padding: 0.75rem 1.25rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            transition: all 0.25s ease;
+            gap: var(--sp-3);
+            background: var(--c-surface);
+            border: 1px solid var(--c-border-strong);
+            border-radius: var(--r-lg);
+            padding: 0.7rem 0.9rem 0.7rem 1rem;
+            box-shadow: var(--shadow-md);
+            transition: border-color var(--dur), box-shadow var(--dur);
             cursor: text;
         }
 
         .search-input-bar:focus-within {
-            border-color: var(--accent);
-            box-shadow: 0 0 30px var(--accent-glow), 0 10px 40px rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
+            border-color: var(--c-accent);
+            box-shadow: var(--shadow-glow);
         }
 
         .search-icon {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 0.85rem;
-            color: var(--text-muted);
+            color: var(--c-text-subtle);
         }
 
         .search-icon svg {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             fill: currentColor;
-            transition: color 0.2s;
         }
 
-        .search-input-bar:focus-within .search-icon svg {
-            color: var(--accent);
+        .search-input-bar:focus-within .search-icon {
+            color: var(--c-accent);
         }
 
         .search-input {
             flex: 1;
+            min-width: 0;
             background: transparent;
             border: none;
             outline: none;
-            color: var(--text-main);
+            color: var(--c-text);
             font-family: var(--font-sans);
-            font-size: 1.1rem;
+            font-size: var(--fs-md);
             font-weight: 500;
+            text-overflow: ellipsis;
+        }
+
+        .search-input:focus-visible {
+            outline: none;
         }
 
         .search-input::placeholder {
-            color: #64748b;
+            color: var(--c-text-subtle);
             font-weight: 400;
         }
 
         .search-shortcut {
             font-family: var(--font-mono);
-            font-size: 0.72rem;
-            background: #1e293b;
-            color: #94a3b8;
-            padding: 0.25rem 0.55rem;
-            border-radius: 6px;
-            border: 1px solid #334155;
-            letter-spacing: 0.05em;
+            font-size: var(--fs-2xs);
+            background: var(--c-surface-3);
+            color: var(--c-text-muted);
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--r-sm);
+            border: 1px solid var(--c-border-strong);
+            white-space: nowrap;
         }
 
-        /* Dropdown Results */
         .search-dropdown-menu {
             position: absolute;
-            top: calc(100% + 10px);
+            top: calc(100% + 8px);
             left: 0;
             right: 0;
-            background: #0f172a;
-            border: 1px solid var(--surface-border);
-            border-radius: 16px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            background: var(--c-surface);
+            border: 1px solid var(--c-border-strong);
+            border-radius: var(--r-lg);
+            box-shadow: var(--shadow-lg);
             z-index: 100;
-            max-height: 420px;
+            max-height: 400px;
             overflow-y: auto;
-            backdrop-filter: blur(20px);
-            animation: fadeInDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeInDown 0.18s var(--ease);
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-8px); }
+            from { opacity: 0; transform: translateY(-6px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .dropdown-header {
-            padding: 0.85rem 1.25rem;
-            border-bottom: 1px solid var(--surface-border);
-            font-size: 0.75rem;
-            font-family: var(--font-mono);
-            color: var(--text-muted);
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid var(--c-border);
+            font-size: var(--fs-xs);
+            color: var(--c-text-muted);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(15, 23, 42, 0.6);
+            gap: var(--sp-3);
+            position: sticky;
+            top: 0;
+            background: var(--c-surface);
+            z-index: 1;
         }
 
         .dropdown-list {
-            padding: 0.5rem;
+            padding: 0.4rem;
         }
 
         .dropdown-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.85rem 1rem;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.15s ease;
+            gap: var(--sp-3);
+            padding: 0.7rem 0.8rem;
+            border-radius: var(--r-md);
             text-decoration: none;
             color: inherit;
+            transition: background var(--dur-fast);
         }
 
-        .dropdown-item:hover, .dropdown-item.active {
-            background: #1e293b;
-            transform: translateX(4px);
+        .dropdown-item:hover,
+        .dropdown-item.active {
+            background: var(--c-surface-3);
+        }
+
+        .dropdown-item:focus-visible {
+            outline: 2px solid var(--c-accent);
+            outline-offset: -2px;
         }
 
         .repo-item-left {
             display: flex;
             align-items: center;
-            gap: 0.85rem;
+            gap: var(--sp-3);
             min-width: 0;
         }
 
         .repo-item-icon {
             width: 32px;
             height: 32px;
-            border-radius: 8px;
-            background: #1e293b;
+            border-radius: var(--r-sm);
+            background: var(--c-surface-3);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            color: var(--text-muted);
+            color: var(--c-text-muted);
         }
 
-        .dropdown-item:hover .repo-item-icon {
-            background: rgba(56, 189, 248, 0.15);
-            color: var(--accent);
+        .dropdown-item:hover .repo-item-icon,
+        .dropdown-item.active .repo-item-icon {
+            background: var(--c-accent-soft);
+            color: var(--c-accent);
         }
 
         .repo-item-icon svg {
@@ -426,119 +488,270 @@
         }
 
         .repo-item-name {
-            font-size: 0.95rem;
+            font-size: var(--fs-base);
             font-weight: 700;
-            color: var(--text-main);
+            color: var(--c-text);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .repo-item-desc {
-            font-size: 0.78rem;
-            color: var(--text-muted);
+            font-size: var(--fs-xs);
+            color: var(--c-text-muted);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 440px;
             margin-top: 2px;
         }
 
         .repo-item-right {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: var(--sp-2);
             flex-shrink: 0;
         }
 
-        .repo-badge {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            font-weight: 600;
-            padding: 0.2rem 0.55rem;
-            border-radius: 6px;
-        }
-
-        .badge-private {
-            background: rgba(251, 191, 36, 0.12);
-            color: var(--warning);
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-
-        .badge-public {
-            background: rgba(56, 189, 248, 0.12);
-            color: var(--accent);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-        }
-
         .repo-lang-tag {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            color: #94a3b8;
-            display: flex;
+            font-size: var(--fs-xs);
+            color: var(--c-text-muted);
+            display: inline-flex;
             align-items: center;
             gap: 0.35rem;
+            white-space: nowrap;
         }
 
         .lang-dot {
-            width: 7px;
-            height: 7px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: #f59e0b;
+            background: #94a3b8;
         }
 
         .dropdown-empty {
-            padding: 2rem 1.5rem;
+            padding: var(--sp-6) var(--sp-5);
             text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            color: var(--c-text-muted);
+            font-size: var(--fs-sm);
         }
 
+        .dropdown-empty p {
+            margin-bottom: var(--sp-4);
+        }
+
+        /* --------------------------------------------------------------
+           Sections
+           -------------------------------------------------------------- */
+        .section {
+            margin-top: var(--sp-8);
+        }
+
+        .section-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: var(--sp-4);
+            margin-bottom: var(--sp-5);
+            flex-wrap: wrap;
+        }
+
+        .section-kicker {
+            font-size: var(--fs-xs);
+            font-weight: 700;
+            color: var(--c-accent-text);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: var(--sp-1);
+        }
+
+        .section-title {
+            font-size: var(--fs-xl);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #fff;
+        }
+
+        .section-sub {
+            font-size: var(--fs-sm);
+            color: var(--c-text-muted);
+        }
+
+        /* How it works */
+        .steps {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: var(--sp-5);
+        }
+
+        .step {
+            position: relative;
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-lg);
+            padding: var(--sp-6);
+            transition: border-color var(--dur), transform var(--dur);
+        }
+
+        .step:hover {
+            border-color: var(--c-accent-border);
+            transform: translateY(-2px);
+        }
+
+        .step-num {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r-md);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: var(--fs-sm);
+            color: var(--c-accent-text);
+            background: var(--c-accent-soft);
+            border: 1px solid var(--c-accent-border);
+            margin-bottom: var(--sp-4);
+        }
+
+        .step h3 {
+            font-size: var(--fs-md);
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: var(--sp-2);
+        }
+
+        .step p {
+            font-size: var(--fs-sm);
+            color: var(--c-text-muted);
+            line-height: 1.6;
+        }
+
+        .step-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: var(--sp-4);
+        }
+
+        /* Signed-in repo grid */
+        .repo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: var(--sp-4);
+        }
+
+        .repo-card {
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-2);
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-lg);
+            padding: var(--sp-5);
+            text-decoration: none;
+            color: inherit;
+            min-height: 132px;
+            transition: border-color var(--dur), transform var(--dur), box-shadow var(--dur);
+        }
+
+        .repo-card:hover {
+            border-color: var(--c-accent-border);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .repo-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--sp-2);
+        }
+
+        .repo-card-name {
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .repo-card-desc {
+            font-size: var(--fs-sm);
+            color: var(--c-text-muted);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .repo-card-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: var(--fs-xs);
+            color: var(--c-text-subtle);
+        }
+
+        .repo-card-cta {
+            color: var(--c-accent-text);
+            font-weight: 600;
+        }
+
+        .repo-card.skeleton-card {
+            pointer-events: none;
+        }
+
+        .state-box {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: var(--sp-7) var(--sp-5);
+            border: 1px dashed var(--c-border-strong);
+            border-radius: var(--r-lg);
+            color: var(--c-text-muted);
+            font-size: var(--fs-sm);
+        }
+
+        .state-box h3 {
+            color: #fff;
+            font-size: var(--fs-md);
+            margin-bottom: var(--sp-1);
+        }
+
+        .state-box p {
+            margin-bottom: var(--sp-4);
+        }
+
+        /* Under the hood */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--surface-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(56, 189, 248, 0.4);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: var(--sp-5);
         }
 
         .card h3 {
-            font-size: 1.05rem;
+            font-size: var(--fs-md);
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            margin-bottom: var(--sp-2);
+            color: #fff;
         }
 
-        .card p {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 1rem;
+        .card > p {
+            font-size: var(--fs-sm);
+            color: var(--c-text-muted);
+            line-height: 1.55;
+            margin-bottom: var(--sp-4);
         }
 
         .user-detail-row {
             display: flex;
             justify-content: space-between;
-            padding: 0.45rem 0;
-            border-bottom: 1px solid #1e293b;
-            font-size: 0.82rem;
+            gap: var(--sp-3);
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--c-border);
+            font-size: var(--fs-sm);
         }
 
         .user-detail-row:last-child {
@@ -546,35 +759,105 @@
         }
 
         .user-detail-label {
-            color: var(--text-muted);
+            color: var(--c-text-muted);
         }
 
         .user-detail-val {
             font-family: var(--font-mono);
-            color: var(--accent);
+            font-size: var(--fs-xs);
+            color: var(--c-accent-text);
             font-weight: 600;
+            text-align: right;
         }
 
-        footer {
-            border-top: 1px solid var(--surface-border);
-            padding: 1.25rem 2.5rem;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-family: var(--font-mono);
-            margin-top: auto;
+        .session-empty {
+            color: var(--c-text-muted);
+            font-size: var(--fs-sm);
+            line-height: 1.55;
         }
 
-        .hidden {
-            display: none !important;
+        .session-empty strong {
+            color: var(--c-text);
+        }
+
+        /* --------------------------------------------------------------
+           Responsive
+           -------------------------------------------------------------- */
+        @media (max-width: 980px) {
+            .hero {
+                grid-template-columns: 1fr;
+                gap: var(--sp-7);
+                padding-bottom: var(--sp-5);
+            }
+
+            .hero-visual {
+                max-width: 560px;
+                width: 100%;
+                justify-self: center;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 760px) {
+            main {
+                padding: var(--sp-5) var(--sp-4) var(--sp-7);
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .user-profile-badge {
+                padding: 0.2rem;
+            }
+
+            .search-shortcut,
+            .dropdown-header span:last-child {
+                display: none;
+            }
+
+            .hero-lead {
+                font-size: var(--fs-md);
+            }
+
+            .hero-cta .btn {
+                flex: 1 1 auto;
+            }
+
+            .section {
+                margin-top: var(--sp-7);
+            }
+        }
+
+        @media (max-width: 480px) {
+            #auth-logged-out .btn-ghost,
+            .btn-label-long {
+                display: none;
+            }
+
+            .hero-visual-card {
+                left: var(--sp-3);
+                bottom: var(--sp-3);
+            }
+
+            .repo-item-right .repo-lang-tag {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <header>
-        <a href="/" class="logo-wrap">
+        <a href="/" class="logo-wrap" aria-label="DepLens home">
             <div class="logo-icon">
-                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </div>
             <div class="logo-text">
                 <h1>DepLens</h1>
@@ -583,108 +866,226 @@
         </a>
 
         <div class="header-actions">
+            <!-- Shown while the session is being checked -->
+            <span id="auth-pending" class="skeleton header-skeleton" aria-hidden="true"></span>
+
             <!-- Logged Out View -->
-            <div id="auth-logged-out" class="header-actions">
-                <a href="/oauth2/authorization/github" class="btn btn-github">
-                    <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                    Sign in with GitHub
-                </a>
-                <button class="btn btn-secondary" onclick="quickDevLogin()" title="Instant 30-day session without GitHub credentials">
+            <div id="auth-logged-out" class="header-actions hidden">
+                <button class="btn btn-ghost" onclick="quickDevLogin()" title="Instant 30-day session without GitHub credentials">
                     Dev Quick-Login
                 </button>
+                <a href="/oauth2/authorization/github" class="btn btn-github">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span>Sign in<span class="btn-label-long"> with GitHub</span></span>
+                </a>
             </div>
 
             <!-- Logged In View -->
             <div id="auth-logged-in" class="header-actions hidden">
                 <div class="user-profile-badge">
-                    <img id="nav-avatar" class="user-avatar" src="" alt="Avatar">
+                    <span id="nav-avatar-wrap"></span>
                     <div class="user-info">
                         <span id="nav-name" class="user-name">User</span>
                         <span class="user-session">
-                            <span class="session-dot"></span> 30-Day Session
+                            <span class="session-dot"></span> 30-day session
                         </span>
                     </div>
                 </div>
-                <button class="btn btn-danger" onclick="logout()">Logout</button>
+                <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
             </div>
         </div>
     </header>
 
     <main>
-        <!-- Center Add Repository Search Section -->
-        <section class="center-search-section">
-            <div class="search-badge-tag">
-                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                <span>Add Repository</span>
-            </div>
-            <h2 class="search-title">Analyze Your Repositories</h2>
-            <p class="search-subtitle">
-                Search through your GitHub account (public or private) to link a repository for dependency tree parsing, AST exposure checks, and blast radius calculations.
-            </p>
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-copy">
+                <div class="eyebrow"><span class="pulse-dot"></span> Software supply chain risk, mapped</div>
+                <h2 class="hero-title">Find the dependency that could <span class="grad">break your app</span>.</h2>
+                <p class="hero-lead">
+                    DepLens reads your repository's manifests, builds the full dependency graph, flags known CVEs and scores how far a vulnerable package's damage could spread.
+                </p>
 
-            <div class="search-box-wrapper" id="search-box-container">
-                <div class="search-input-bar" id="search-bar" onclick="focusSearch()">
-                    <div class="search-icon">
-                        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <!-- CTA: changes with the session state -->
+                <div>
+                    <div id="hero-cta-pending" class="hero-cta">
+                        <span class="skeleton cta-skeleton" aria-hidden="true"></span>
                     </div>
-                    <input type="text" id="repo-search-input" class="search-input" placeholder="Type repository name to search..." autocomplete="off" />
-                    <span class="search-shortcut">⌘K</span>
+
+                    <div id="hero-cta-out" class="hidden">
+                        <div class="hero-cta">
+                            <a href="/oauth2/authorization/github" class="btn btn-github btn-lg">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                                Sign in with GitHub
+                            </a>
+                            <button class="btn btn-secondary btn-lg" onclick="quickDevLogin()">Try Dev Quick-Login</button>
+                        </div>
+                        <p class="hero-note">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                            Sign in to list the repositories you own or collaborate on.
+                        </p>
+                    </div>
+
+                    <div id="hero-cta-in" class="hidden">
+                        <p class="hero-welcome">Welcome back, <strong id="hero-user-name">developer</strong>. Pick a repository to scan.</p>
+                    </div>
                 </div>
 
-                <!-- Dropdown Results -->
-                <div class="search-dropdown-menu hidden" id="search-dropdown">
-                    <div class="dropdown-header">
-                        <span id="dropdown-count-label">Repositories in your account</span>
-                        <span>ESC to close</span>
+                <!-- Repository search (both states; signed-out shows a sign-in prompt) -->
+                <div class="search-box-wrapper" id="search-box-container">
+                    <div class="search-input-bar" id="search-bar" onclick="focusSearch()">
+                        <span class="search-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        </span>
+                        <label for="repo-search-input" class="sr-only">Search your repositories</label>
+                        <input type="text" id="repo-search-input" class="search-input" placeholder="Search your repositories…" autocomplete="off"
+                               role="combobox" aria-expanded="false" aria-controls="dropdown-repo-list" aria-autocomplete="list" />
+                        <kbd class="search-shortcut" id="search-shortcut">Ctrl K</kbd>
                     </div>
-                    <div class="dropdown-list" id="dropdown-repo-list">
-                        <!-- Populated dynamically via JS -->
+
+                    <div class="search-dropdown-menu hidden" id="search-dropdown">
+                        <div class="dropdown-header">
+                            <span id="dropdown-count-label" aria-live="polite">Repositories in your account</span>
+                            <span>↑↓ move · Enter open · Esc close</span>
+                        </div>
+                        <div class="dropdown-list" id="dropdown-repo-list" aria-label="Repositories"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decorative animated graph -->
+            <div class="hero-visual" aria-hidden="true">
+                <svg viewBox="0 0 400 400">
+                    <line class="mg-edge" x1="200" y1="172" x2="92" y2="88"/>
+                    <line class="mg-edge hot" x1="200" y1="172" x2="312" y2="96"/>
+                    <line class="mg-edge" x1="200" y1="172" x2="96" y2="254"/>
+                    <line class="mg-edge" x1="200" y1="172" x2="300" y2="262"/>
+                    <line class="mg-edge hot" x1="312" y1="96" x2="352" y2="186"/>
+                    <line class="mg-edge hot" x1="312" y1="96" x2="250" y2="40"/>
+                    <line class="mg-edge" x1="92" y1="88" x2="40" y2="160"/>
+                    <line class="mg-edge" x1="96" y1="254" x2="164" y2="304"/>
+                    <line class="mg-edge" x1="300" y1="262" x2="352" y2="186"/>
+
+                    <g class="mg-node"><circle cx="92" cy="88" r="13" fill="#062319" stroke="#34d399" stroke-width="2.2"/><text class="mg-label" x="92" y="116" text-anchor="middle">cors</text></g>
+                    <g class="mg-node"><circle cx="40" cy="160" r="9" fill="#062319" stroke="#34d399" stroke-width="2"/></g>
+                    <g class="mg-node"><circle cx="96" cy="254" r="12" fill="#271a06" stroke="#fbbf24" stroke-width="2.2"/><text class="mg-label" x="96" y="281" text-anchor="middle">lodash</text></g>
+                    <g class="mg-node"><circle cx="164" cy="304" r="8" fill="#062319" stroke="#34d399" stroke-width="2"/></g>
+                    <g class="mg-node"><circle cx="250" cy="40" r="10" fill="#2a1406" stroke="#fb923c" stroke-width="2.2"/><text class="mg-label" x="250" y="24" text-anchor="middle">follow-redirects</text></g>
+                    <g class="mg-node"><circle cx="352" cy="186" r="11" fill="#2a1406" stroke="#fb923c" stroke-width="2.2"/><text class="mg-label" x="352" y="213" text-anchor="middle">form-data</text></g>
+                    <g class="mg-node"><circle cx="300" cy="262" r="12" fill="#271a06" stroke="#fbbf24" stroke-width="2.2"/><text class="mg-label" x="300" y="290" text-anchor="middle">express</text></g>
+
+                    <circle class="mg-ring" cx="312" cy="96" r="18" stroke-width="2"/>
+                    <circle cx="312" cy="96" r="18" fill="#2a0812" stroke="#f43f5e" stroke-width="2.6"/>
+                    <text class="mg-label" x="312" y="100" text-anchor="middle" style="fill:#fda4af; font-weight:700;">!</text>
+                    <text class="mg-label" x="312" y="130" text-anchor="middle" style="fill:#fda4af;">axios</text>
+
+                    <circle cx="200" cy="172" r="24" fill="#0369a1" stroke="#38bdf8" stroke-width="3"/>
+                    <path d="M200 160l-10 4.5v6.5c0 6 4.3 11.6 10 13 5.7-1.4 10-7 10-13v-6.5z" fill="#e0f2fe"/>
+                </svg>
+                <div class="hero-visual-card">
+                    <span class="sev sev-critical">Critical</span>
+                    <div>
+                        <strong>axios@1.6.0</strong>
+                        Damage reaches 3 more packages
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Informational Cards Grid -->
-        <section class="grid">
-            <div class="card">
-                <h3>Session Details</h3>
-                <p>Persistent 30-day JWT authentication linked to your GitHub identity.</p>
-                <div id="user-details-list">
-                    <pre style="color: #94a3b8; font-size: 0.8rem;">Loading session details...</pre>
+        <!-- Signed-in: quick repo picker -->
+        <section id="repos-section" class="section hidden" aria-labelledby="repos-title">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Your repositories</div>
+                    <h2 id="repos-title" class="section-title">Choose a repository to scan</h2>
+                </div>
+                <span id="repos-count" class="section-sub"></span>
+            </div>
+            <div id="repo-grid" class="repo-grid"></div>
+        </section>
+
+        <!-- How it works -->
+        <section class="section" aria-labelledby="how-title">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">How it works</div>
+                    <h2 id="how-title" class="section-title">From repository to risk report in three steps</h2>
                 </div>
             </div>
+            <ol class="steps">
+                <li class="step">
+                    <div class="step-num">1</div>
+                    <h3>Connect GitHub</h3>
+                    <p>Sign in and pick any repository you own or collaborate on, public or private.</p>
+                </li>
+                <li class="step">
+                    <div class="step-num">2</div>
+                    <h3>Scan the manifests</h3>
+                    <p>DepLens parses your lockfile or manifest into a directed dependency graph and checks every package for known vulnerabilities.</p>
+                    <div class="step-tags">
+                        <span class="badge">package-lock.json</span>
+                        <span class="badge">requirements.txt</span>
+                        <span class="badge">pom.xml</span>
+                    </div>
+                </li>
+                <li class="step">
+                    <div class="step-num">3</div>
+                    <h3>See the blast radius</h3>
+                    <p>Every package gets a composite risk score, a place on the graph and a recommended fix with an effort estimate. Export the table as CSV or PDF.</p>
+                </li>
+            </ol>
+        </section>
 
-            <div class="card">
-                <h3>Graph &amp; Blast Radius Engine</h3>
-                <p>Constructs directed graphs via JGraphT 1.5.2 and source ASTs via JavaParser 3.26.1.</p>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">Dependency Parser</span>
-                    <span class="user-detail-val">pom.xml / package.json</span>
-                </div>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">Graph Calculation</span>
-                    <span class="user-detail-val">Reverse-BFS Radius</span>
-                </div>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">Exposure Mapping</span>
-                    <span class="user-detail-val">Source Line AST</span>
+        <!-- Under the hood -->
+        <section class="section" aria-labelledby="hood-title">
+            <div class="section-head">
+                <div>
+                    <div class="section-kicker">Under the hood</div>
+                    <h2 id="hood-title" class="section-title">Session and engine details</h2>
                 </div>
             </div>
+            <div class="grid">
+                <div class="card">
+                    <h3>Session Details</h3>
+                    <p>Persistent 30-day JWT authentication linked to your GitHub identity.</p>
+                    <div id="user-details-list">
+                        <span class="skeleton" style="height: 12px; width: 70%; margin-bottom: 10px;"></span>
+                        <span class="skeleton" style="height: 12px; width: 55%;"></span>
+                    </div>
+                </div>
 
-            <div class="card">
-                <h3>MySQL Persistence</h3>
-                <p>Stores dependency metadata, scan history, and findings in <code>deplens_db</code>.</p>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">Database</span>
-                    <span class="user-detail-val">deplens_db (Connected)</span>
+                <div class="card">
+                    <h3>Graph &amp; Blast Radius Engine</h3>
+                    <p>Constructs directed graphs via JGraphT 1.5.2 and source ASTs via JavaParser 3.26.1.</p>
+                    <div class="user-detail-row">
+                        <span class="user-detail-label">Dependency Parser</span>
+                        <span class="user-detail-val">pom.xml / package.json</span>
+                    </div>
+                    <div class="user-detail-row">
+                        <span class="user-detail-label">Graph Calculation</span>
+                        <span class="user-detail-val">Reverse-BFS Radius</span>
+                    </div>
+                    <div class="user-detail-row">
+                        <span class="user-detail-label">Exposure Mapping</span>
+                        <span class="user-detail-val">Source Line AST</span>
+                    </div>
                 </div>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">Driver</span>
-                    <span class="user-detail-val">MySQL Connector/J</span>
-                </div>
-                <div class="user-detail-row">
-                    <span class="user-detail-label">ORM</span>
-                    <span class="user-detail-val">Hibernate 6 / JPA</span>
+
+                <div class="card">
+                    <h3>MySQL Persistence</h3>
+                    <p>Stores dependency metadata, scan history, and findings in <code>deplens_db</code>.</p>
+                    <div class="user-detail-row">
+                        <span class="user-detail-label">Database</span>
+                        <span class="user-detail-val">deplens_db</span>
+                    </div>
+                    <div class="user-detail-row">
+                        <span class="user-detail-label">Driver</span>
+                        <span class="user-detail-val">MySQL Connector/J</span>
+                    </div>
+                    <div class="user-detail-row">
+                        <span class="user-detail-label">ORM</span>
+                        <span class="user-detail-val">Hibernate 6 / JPA</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -697,6 +1098,9 @@
     <script>
         let allUserRepos = [];
         let isAuthenticated = false;
+        let reposLoaded = false;
+        let activeIndex = -1;
+        let visibleRepos = [];
 
         // Check for token in URL query parameter (redirected from OAuth2 callback)
         (function handleOAuthRedirect() {
@@ -707,6 +1111,10 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         })();
+
+        // Show the right shortcut hint for the platform
+        document.getElementById('search-shortcut').textContent =
+            /Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
 
         function getToken() {
             return localStorage.getItem('deplens_jwt');
@@ -733,31 +1141,65 @@
                     renderLoggedOut();
                 }
             } catch (err) {
-                console.error('Auth error:', err);
+                console.warn('Auth check failed:', err);
                 renderLoggedOut();
             }
         }
 
+        function setPending(pending) {
+            document.getElementById('auth-pending').classList.toggle('hidden', !pending);
+            document.getElementById('hero-cta-pending').classList.toggle('hidden', !pending);
+        }
+
+        function initialsFor(name) {
+            const parts = String(name || '?').trim().split(/[\s._-]+/).filter(Boolean);
+            const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : (parts[0] || '?').slice(0, 2);
+            return letters.toUpperCase();
+        }
+
+        // GitHub avatar when we have one, initials otherwise (or if the image fails)
+        function renderAvatar(user) {
+            const wrap = document.getElementById('nav-avatar-wrap');
+            const initials = `<span class="user-initials" aria-hidden="true">${escapeHtml(initialsFor(user.name || user.username))}</span>`;
+            if (!user.avatarUrl) {
+                wrap.innerHTML = initials;
+                return;
+            }
+            const img = document.createElement('img');
+            img.className = 'user-avatar';
+            img.alt = '';
+            img.onerror = () => { wrap.innerHTML = initials; };
+            img.src = user.avatarUrl;
+            wrap.innerHTML = '';
+            wrap.appendChild(img);
+        }
+
         function renderLoggedIn(user) {
+            setPending(false);
             document.getElementById('auth-logged-out').classList.add('hidden');
             document.getElementById('auth-logged-in').classList.remove('hidden');
+            document.getElementById('hero-cta-out').classList.add('hidden');
+            document.getElementById('hero-cta-in').classList.remove('hidden');
+            document.getElementById('repos-section').classList.remove('hidden');
 
-            document.getElementById('nav-name').textContent = user.name || user.username;
-            document.getElementById('nav-avatar').src = user.avatarUrl || 'https://github.com/identicons/' + user.username + '.png';
+            const displayName = user.name || user.username;
+            document.getElementById('nav-name').textContent = displayName;
+            document.getElementById('hero-user-name').textContent = displayName;
+            renderAvatar(user);
 
             const detailsHtml = `
                 <div class="user-detail-row">
                     <span class="user-detail-label">User</span>
-                    <span class="user-detail-val">@${user.username}</span>
+                    <span class="user-detail-val">@${escapeHtml(user.username)}</span>
                 </div>
                 <div class="user-detail-row">
                     <span class="user-detail-label">Session</span>
-                    <span class="user-detail-val" style="color: var(--success);">${user.sessionDays} Days (Active)</span>
+                    <span class="user-detail-val" style="color: var(--sev-low-text);">${escapeHtml(user.sessionDays)} days (active)</span>
                 </div>
                 <div class="user-detail-row">
                     <span class="user-detail-label">GitHub Token</span>
-                    <span class="user-detail-val" style="color: ${user.hasGithubToken ? 'var(--success)' : 'var(--warning)'};">
-                        ${user.hasGithubToken ? 'Connected (API Ready)' : 'Dev Token'}
+                    <span class="user-detail-val" style="color: ${user.hasGithubToken ? 'var(--sev-low-text)' : 'var(--sev-medium-text)'};">
+                        ${user.hasGithubToken ? 'Connected (API ready)' : 'Dev token'}
                     </span>
                 </div>
             `;
@@ -765,10 +1207,14 @@
         }
 
         function renderLoggedOut() {
+            setPending(false);
             document.getElementById('auth-logged-in').classList.add('hidden');
             document.getElementById('auth-logged-out').classList.remove('hidden');
+            document.getElementById('hero-cta-in').classList.add('hidden');
+            document.getElementById('hero-cta-out').classList.remove('hidden');
+            document.getElementById('repos-section').classList.add('hidden');
             document.getElementById('user-details-list').innerHTML = `
-                <pre style="color: #94a3b8; font-size: 0.8rem;">No active session.\nSign in with GitHub or click Dev Quick-Login above.</pre>
+                <p class="session-empty"><strong>No active session.</strong><br>Sign in with GitHub, or use Dev Quick-Login for a local test session.</p>
             `;
         }
 
@@ -780,14 +1226,84 @@
                 headers['Authorization'] = 'Bearer ' + token;
             }
 
+            reposLoaded = false;
+            renderRepoGridLoading();
             try {
                 const res = await fetch('/api/github/repos', { headers });
-                if (res.ok) {
-                    allUserRepos = await res.json();
-                }
+                if (!res.ok) throw new Error('Server responded with ' + res.status);
+                allUserRepos = await res.json();
+                reposLoaded = true;
+                renderRepoGrid();
             } catch (e) {
-                console.error('Failed to load repositories:', e);
+                console.warn('Failed to load repositories:', e);
+                renderRepoGridError();
             }
+            if (!searchDropdown.classList.contains('hidden')) {
+                filterAndDisplayRepos(searchInput.value);
+            }
+        }
+
+        function repoUrl(repo) {
+            return `/repo.html?owner=${encodeURIComponent(repo.owner)}&repo=${encodeURIComponent(repo.name)}`;
+        }
+
+        function langColor(lang) {
+            const colors = { Java: '#f59e0b', JavaScript: '#facc15', TypeScript: '#60a5fa', Python: '#38bdf8', Go: '#22d3ee', Kotlin: '#a78bfa' };
+            return colors[lang] || '#94a3b8';
+        }
+
+        function renderRepoGridLoading() {
+            document.getElementById('repos-count').textContent = '';
+            document.getElementById('repo-grid').innerHTML = [1, 2, 3].map(() => `
+                <div class="repo-card skeleton-card" aria-hidden="true">
+                    <span class="skeleton" style="height: 14px; width: 55%;"></span>
+                    <span class="skeleton" style="height: 10px; width: 90%; margin-top: 8px;"></span>
+                    <span class="skeleton" style="height: 10px; width: 70%;"></span>
+                    <span class="skeleton" style="height: 10px; width: 35%; margin-top: auto;"></span>
+                </div>`).join('');
+        }
+
+        function renderRepoGridError() {
+            document.getElementById('repos-count').textContent = '';
+            document.getElementById('repo-grid').innerHTML = `
+                <div class="state-box">
+                    <h3>Couldn't load your repositories</h3>
+                    <p>GitHub or the DepLens server didn't respond. Check that the server is running and try again.</p>
+                    <button class="btn btn-secondary btn-sm" onclick="loadRepositories()">Try again</button>
+                </div>`;
+        }
+
+        function renderRepoGrid() {
+            const grid = document.getElementById('repo-grid');
+            const count = document.getElementById('repos-count');
+            if (allUserRepos.length === 0) {
+                count.textContent = '';
+                grid.innerHTML = `
+                    <div class="state-box">
+                        <h3>No repositories yet</h3>
+                        <p>We couldn't find any repositories you own or collaborate on in this GitHub account.</p>
+                    </div>`;
+                return;
+            }
+            const shown = allUserRepos.slice(0, 6);
+            count.textContent = allUserRepos.length > shown.length
+                ? `Showing ${shown.length} of ${allUserRepos.length} · use search to find the rest`
+                : `${allUserRepos.length} ${allUserRepos.length === 1 ? 'repository' : 'repositories'}`;
+            grid.innerHTML = shown.map((repo, i) => `
+                <a class="repo-card" href="${repoUrl(repo)}" data-index="${i}">
+                    <div class="repo-card-top">
+                        <span class="repo-card-name">${escapeHtml(repo.name)}</span>
+                        ${repo.private ? '<span class="badge badge-private">Private</span>' : '<span class="badge badge-visibility">Public</span>'}
+                    </div>
+                    <div class="repo-card-desc">${escapeHtml(repo.description || 'No description provided')}</div>
+                    <div class="repo-card-foot">
+                        <span class="repo-lang-tag"><span class="lang-dot" style="background: ${langColor(repo.language)};"></span>${escapeHtml(repo.language || 'Unknown')}</span>
+                        <span class="repo-card-cta">Open scan →</span>
+                    </div>
+                </a>`).join('');
+            grid.querySelectorAll('.repo-card').forEach(card => {
+                card.addEventListener('click', () => cacheRepo(shown[Number(card.dataset.index)]));
+            });
         }
 
         // Search bar interactions
@@ -800,14 +1316,25 @@
             searchInput.focus();
         }
 
+        function openDropdown() {
+            searchDropdown.classList.remove('hidden');
+            searchInput.setAttribute('aria-expanded', 'true');
+        }
+
+        function closeDropdown() {
+            searchDropdown.classList.add('hidden');
+            searchInput.setAttribute('aria-expanded', 'false');
+            activeIndex = -1;
+        }
+
         searchInput.addEventListener('focus', () => {
             if (!isAuthenticated) {
                 renderUnauthenticatedDropdown();
-                searchDropdown.classList.remove('hidden');
+                openDropdown();
                 return;
             }
             filterAndDisplayRepos(searchInput.value);
-            searchDropdown.classList.remove('hidden');
+            openDropdown();
         });
 
         searchInput.addEventListener('input', (e) => {
@@ -815,43 +1342,76 @@
                 renderUnauthenticatedDropdown();
                 return;
             }
+            openDropdown();
             filterAndDisplayRepos(e.target.value);
         });
 
+        // Arrow keys move through the results, Enter opens one
+        searchInput.addEventListener('keydown', (e) => {
+            if (!isAuthenticated || visibleRepos.length === 0) return;
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                openDropdown();
+                const step = e.key === 'ArrowDown' ? 1 : -1;
+                activeIndex = (activeIndex + step + visibleRepos.length) % visibleRepos.length;
+                highlightActive();
+            } else if (e.key === 'Enter') {
+                const repo = visibleRepos[activeIndex >= 0 ? activeIndex : 0];
+                if (repo) selectRepository(repo.owner, repo.name);
+            }
+        });
+
+        function highlightActive() {
+            dropdownList.querySelectorAll('.dropdown-item').forEach((el, i) => {
+                const on = i === activeIndex;
+                el.classList.toggle('active', on);
+                el.setAttribute('aria-selected', on ? 'true' : 'false');
+                if (on) el.scrollIntoView({ block: 'nearest' });
+            });
+        }
+
         function filterAndDisplayRepos(query) {
             const cleanQuery = (query || '').toLowerCase().trim();
-            const filtered = allUserRepos.filter(r => 
-                r.name.toLowerCase().includes(cleanQuery) || 
-                r.fullName.toLowerCase().includes(cleanQuery) ||
+            activeIndex = -1;
+            dropdownList.removeAttribute('role');
+
+            if (!reposLoaded) {
+                visibleRepos = [];
+                dropdownCount.textContent = 'Loading repositories…';
+                dropdownList.innerHTML = `<div class="dropdown-empty"><span class="skeleton" style="height: 12px; width: 60%; margin: 0 auto 10px;"></span><span class="skeleton" style="height: 12px; width: 40%; margin: 0 auto;"></span></div>`;
+                return;
+            }
+
+            visibleRepos = allUserRepos.filter(r =>
+                r.name.toLowerCase().includes(cleanQuery) ||
+                (r.fullName || '').toLowerCase().includes(cleanQuery) ||
                 (r.description && r.description.toLowerCase().includes(cleanQuery))
             );
 
-            dropdownCount.textContent = `${filtered.length} Repositories found`;
+            dropdownCount.textContent = `${visibleRepos.length} ${visibleRepos.length === 1 ? 'repository' : 'repositories'} found`;
 
-            if (filtered.length === 0) {
+            if (visibleRepos.length === 0) {
                 dropdownList.innerHTML = `
                     <div class="dropdown-empty">
-                        No repositories matching "<strong>${escapeHtml(cleanQuery)}</strong>" found in your account.
+                        No repositories match "<strong>${escapeHtml(cleanQuery)}</strong>" in your account.
                     </div>
                 `;
                 return;
             }
 
-            dropdownList.innerHTML = filtered.map(repo => {
-                const iconSvg = repo.private ? 
+            dropdownList.innerHTML = visibleRepos.map((repo, i) => {
+                const iconSvg = repo.private ?
                     `<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>` :
                     `<svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>`;
 
-                const visibilityBadge = repo.private ? 
-                    `<span class="repo-badge badge-private">Private</span>` : 
-                    `<span class="repo-badge badge-public">Public</span>`;
+                const visibilityBadge = repo.private ?
+                    `<span class="badge badge-private">Private</span>` :
+                    `<span class="badge badge-visibility">Public</span>`;
 
                 return `
-                    <div class="dropdown-item" onclick="selectRepository('${escapeHtml(repo.owner)}', '${escapeHtml(repo.name)}')">
+                    <a class="dropdown-item" role="option" aria-selected="false" href="${repoUrl(repo)}" data-index="${i}">
                         <div class="repo-item-left">
-                            <div class="repo-item-icon">
-                                ${iconSvg}
-                            </div>
+                            <div class="repo-item-icon" aria-hidden="true">${iconSvg}</div>
                             <div class="repo-item-text">
                                 <div class="repo-item-name">${escapeHtml(repo.fullName || repo.name)}</div>
                                 <div class="repo-item-desc">${escapeHtml(repo.description || 'No description provided')}</div>
@@ -860,33 +1420,44 @@
                         <div class="repo-item-right">
                             ${visibilityBadge}
                             <span class="repo-lang-tag">
-                                <span class="lang-dot"></span>
-                                ${escapeHtml(repo.language || 'Java')}
+                                <span class="lang-dot" style="background: ${langColor(repo.language)};"></span>
+                                ${escapeHtml(repo.language || 'Unknown')}
                             </span>
                         </div>
-                    </div>
+                    </a>
                 `;
             }).join('');
+
+            dropdownList.setAttribute('role', 'listbox');
+            dropdownList.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', () => cacheRepo(visibleRepos[Number(item.dataset.index)]));
+            });
         }
 
         function renderUnauthenticatedDropdown() {
-            dropdownCount.textContent = 'Authentication Required';
+            visibleRepos = [];
+            dropdownList.removeAttribute('role');
+            dropdownCount.textContent = 'Sign in required';
             dropdownList.innerHTML = `
                 <div class="dropdown-empty">
-                    <p style="margin-bottom: 1rem;">Please sign in with GitHub to view and search repositories in your account.</p>
-                    <a href="/oauth2/authorization/github" class="btn btn-github" style="display: inline-flex;">Sign in with GitHub</a>
+                    <p>Sign in with GitHub to search the repositories in your account.</p>
+                    <a href="/oauth2/authorization/github" class="btn btn-github btn-sm">Sign in with GitHub</a>
                 </div>
             `;
         }
 
-        // On clicking a repository from the search list, navigate to the slug page
+        // Cache full repo metadata for the slug page
+        function cacheRepo(repoData) {
+            if (!repoData) return;
+            try {
+                sessionStorage.setItem('selected_repo_' + repoData.owner + '_' + repoData.name, JSON.stringify(repoData));
+            } catch (e) {}
+        }
+
+        // On choosing a repository, navigate to the slug page
         function selectRepository(owner, name) {
-            // Find full repo metadata to cache for slug page
             const repoData = allUserRepos.find(r => r.owner === owner && r.name === name);
-            if (repoData) {
-                sessionStorage.setItem('selected_repo_' + owner + '_' + name, JSON.stringify(repoData));
-            }
-            // Navigate to slug page
+            cacheRepo(repoData);
             window.location.href = `/repo.html?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(name)}`;
         }
 
@@ -894,24 +1465,24 @@
         document.addEventListener('click', (e) => {
             const container = document.getElementById('search-box-container');
             if (!container.contains(e.target)) {
-                searchDropdown.classList.add('hidden');
+                closeDropdown();
             }
         });
 
         document.addEventListener('keydown', (e) => {
             // Cmd+K or Ctrl+K to focus search
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
                 searchInput.focus();
             }
             if (e.key === 'Escape') {
-                searchDropdown.classList.add('hidden');
+                closeDropdown();
                 searchInput.blur();
             }
         });
 
         function escapeHtml(str) {
-            if (!str) return '';
+            if (str === null || str === undefined) return '';
             return String(str)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -926,10 +1497,14 @@
                 const data = await res.json();
                 if (data.token) {
                     localStorage.setItem('deplens_jwt', data.token);
-                    checkAuthState();
+                    await checkAuthState();
+                    if (isAuthenticated) showToast('Signed in with a local dev session.', 'success');
+                    else showToast("Signed in, but the session couldn't be verified. Try again.", 'error');
+                } else {
+                    showToast("Dev login didn't return a session token.", 'error');
                 }
             } catch (err) {
-                alert('Dev login failed: ' + err.message);
+                showToast('Dev login failed: ' + err.message, 'error');
             }
         }
 
@@ -939,8 +1514,11 @@
             } catch (e) {}
             localStorage.removeItem('deplens_jwt');
             isAuthenticated = false;
+            reposLoaded = false;
             allUserRepos = [];
+            closeDropdown();
             renderLoggedOut();
+            showToast('You have been signed out.', 'info');
         }
 
         // Run on load
