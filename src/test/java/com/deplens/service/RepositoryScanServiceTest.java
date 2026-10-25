@@ -142,6 +142,41 @@ class RepositoryScanServiceTest {
     }
 
     @Test
+    @DisplayName("OSV results feed the CVSS and risk score, other packages keep the fallback data")
+    void testOsvResultsUsedInRiskScore() {
+        when(repositoryRepo.findFirstByFullNameIgnoreCase("GauthamSalian/DepLensJSF"))
+                .thenReturn(Optional.of(sampleRepo));
+        when(stateRepo.findFirstByRepositoryOrderByLastScannedAtDesc(sampleRepo))
+                .thenReturn(Optional.empty());
+        when(stateRepo.save(any(RepositoryStateEntity.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        Map<String, Object> osvCve = Map.of(
+                "cveId", "CVE-2020-36518", "severity", "HIGH", "cvss", 7.5,
+                "summary", "Deeply nested json causes a stack overflow",
+                "advisoryUrl", "https://nvd.nist.gov/vuln/detail/CVE-2020-36518");
+        when(osvClient.findVulnerabilities(any(), any()))
+                .thenReturn(Map.of("jackson-databind@2.17.1", List.of(osvCve)));
+
+        RepositoryStateEntity state = scanService.recordOrGetScanState(
+                "GauthamSalian", "DepLensJSF", "main", false,
+                "https://github.com/GauthamSalian/DepLensJSF",
+                "9999999", "test", "2026-10-18T08:00:00Z", "Gautham Salian",
+                List.of("pom.xml"), List.of("Maven (Java)")
+        );
+
+        List<PackageMetricEntity> metrics = state.getDependencyGraph().getPackageMetrics();
+        PackageMetricEntity jackson = metrics.stream().filter(m -> m.getPackageName().equals("jackson-databind")).findFirst().orElseThrow();
+        assertEquals(7.5, jackson.getCvssScore());
+        assertTrue(jackson.getCvesJson().contains("CVE-2020-36518"));
+        assertEquals(blastRadiusCalculator.calculateCompositeRisk(7.5, jackson.getBlastRadiusScore(),
+                jackson.getBetweennessCentrality(), jackson.getAstCodeUsageScore()), jackson.getCompositeRiskScore());
+
+        // Not in the OSV map, so the old hardcoded data is still used
+        PackageMetricEntity tomcat = metrics.stream().filter(m -> m.getPackageName().equals("tomcat-embed-core")).findFirst().orElseThrow();
+        assertTrue(tomcat.getCvesJson().contains("CVE-2024-21733"));
+    }
+
+    @Test
     @DisplayName("Should return cached state if commit SHA has not changed")
     void testCacheHitWhenCommitUnchanged() {
         RepositoryStateEntity existingState = new RepositoryStateEntity(
