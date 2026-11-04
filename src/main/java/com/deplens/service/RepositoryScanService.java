@@ -29,6 +29,7 @@ public class RepositoryScanService {
     private final BlastRadiusCalculatorService blastRadiusCalculator;
     private final DependencyParserService dependencyParserService;
     private final GitHubService gitHubService;
+    private final OsvVulnerabilityClient osvClient;
     private final ObjectMapper objectMapper;
 
     public RepositoryScanService(RepositoryEntityRepository repositoryRepo,
@@ -37,7 +38,8 @@ public class RepositoryScanService {
                                  PackageMetricRepository metricRepo,
                                  BlastRadiusCalculatorService blastRadiusCalculator,
                                  DependencyParserService dependencyParserService,
-                                 GitHubService gitHubService) {
+                                 GitHubService gitHubService,
+                                 OsvVulnerabilityClient osvClient) {
         this.repositoryRepo = repositoryRepo;
         this.stateRepo = stateRepo;
         this.graphRepo = graphRepo;
@@ -45,6 +47,7 @@ public class RepositoryScanService {
         this.blastRadiusCalculator = blastRadiusCalculator;
         this.dependencyParserService = dependencyParserService;
         this.gitHubService = gitHubService;
+        this.osvClient = osvClient;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -86,9 +89,12 @@ public class RepositoryScanService {
         if (existingStateOpt.isPresent()) {
             RepositoryStateEntity existing = existingStateOpt.get();
             if (commitSha != null && commitSha.equalsIgnoreCase(existing.getLatestCommitSha())) {
-                log.info("Repository {} commit {} has not changed. Returning cached state.", fullName, commitSha);
-                existing.setLastScannedAt(LocalDateTime.now());
-                return stateRepo.save(existing);
+                if (!hasPendingOsvDetails(existing)) {
+                    log.info("Repository {} commit {} has not changed. Returning cached state.", fullName, commitSha);
+                    existing.setLastScannedAt(LocalDateTime.now());
+                    return stateRepo.save(existing);
+                }
+                log.info("Cached state for {} has OSV details that failed to load. Rescanning to retry them.", fullName);
             }
         }
 
@@ -103,7 +109,11 @@ public class RepositoryScanService {
         );
 
         // Build graph with dependencies and their dependencies (sub-dependencies)
-        GraphData graphData = buildDependencyGraph(user, ownerName, repoName, manifests != null ? manifests : List.of());
+        Map<String, String> mavenGroupIds = new HashMap<>();
+        GraphData graphData = buildDependencyGraph(user, ownerName, repoName, manifests != null ? manifests : List.of(), mavenGroupIds);
+
+        // Real vulnerability data from OSV.dev, packages missing from this map use the old fallback data
+        Map<String, List<Map<String, Object>>> osvResults = osvClient.findVulnerabilities(graphData.nodes(), mavenGroupIds);
 
         DependencyGraphEntity graphEntity = new DependencyGraphEntity(
                 state,
@@ -152,8 +162,9 @@ public class RepositoryScanService {
             metric.setBlastRadiusScore(blastRadius);
 
             // 3.4 DepLens Composite Risk Score
-            double cvss = node.cvss();
-            String cvesJson = generateCvesForPackage(node.name(), node.version(), node.ecosystem(), cvss);
+            List<Map<String, Object>> osvCves = osvResults.get(node.name() + "@" + node.version());
+            double cvss = osvCves != null ? 0.0 : node.cvss();
+            String cvesJson = osvCves != null ? toJson(osvCves) : generateCvesForPackage(node.name(), node.version(), node.ecosystem(), cvss);
             try {
                 com.fasterxml.jackson.databind.JsonNode cvesTree = objectMapper.readTree(cvesJson);
                 if (cvesTree.isArray() && cvesTree.size() > 0) {
@@ -203,7 +214,8 @@ public class RepositoryScanService {
      * Constructs dependency graph nodes and directed edges between dependencies and their sub-dependencies.
      * Extracts from actual package-lock.json, pip freeze requirements.txt, or pom.xml.
      */
-    private GraphData buildDependencyGraph(com.deplens.model.User user, String ownerName, String repoName, List<String> manifests) {
+    private GraphData buildDependencyGraph(com.deplens.model.User user, String ownerName, String repoName, List<String> manifests,
+                                           Map<String, String> mavenGroupIds) {
         // 1. If package-lock.json exists, fetch and parse real npm dependency tree with sub-dependencies
         if (manifests.contains("package-lock.json")) {
             Optional<String> lockContent = gitHubService.getFileContent(user, ownerName, repoName, "package-lock.json");
@@ -241,6 +253,7 @@ public class RepositoryScanService {
         if (manifests.contains("pom.xml")) {
             Optional<String> pomContent = gitHubService.getFileContent(user, ownerName, repoName, "pom.xml");
             if (pomContent.isPresent()) {
+                mavenGroupIds.putAll(OsvVulnerabilityClient.extractMavenGroupIds(pomContent.get()));
                 DependencyParserService.ParsedGraphResult parsed = dependencyParserService.parsePomXml(pomContent.get());
                 if (parsed.totalNodes() > 0) {
                     return toGraphData(parsed);
@@ -343,6 +356,15 @@ public class RepositoryScanService {
                 transitiveCount,
                 maxDepth
         );
+    }
+
+    private boolean hasPendingOsvDetails(RepositoryStateEntity state) {
+        DependencyGraphEntity graph = state.getDependencyGraph();
+        if (graph == null || graph.getPackageMetrics() == null) return false;
+        for (PackageMetricEntity metric : graph.getPackageMetrics()) {
+            if (OsvVulnerabilityClient.hasPendingDetails(metric.getCvesJson())) return true;
+        }
+        return false;
     }
 
     public Optional<DependencyGraphEntity> getGraphForState(RepositoryStateEntity state) {
